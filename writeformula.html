@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Formula Quest</title>
+    <style>
+        :root {
+            --primary: #0d9488; /* Turquoise/Teal */
+            --primary-light: #f0fdfa;
+            --success: #16a34a;
+            --error: #dc2626;
+            --bg-turquoise: #2dd4bf; /* Main home background */
+            --bg-game: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --hint-bg: #fef9c3;
+            --hint-text: #854d0e;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            color: #1e293b;
+            transition: background-color 0.3s ease;
+        }
+
+        body.home-active {
+            background-color: var(--bg-turquoise);
+        }
+
+        body.game-active {
+            background-color: var(--bg-game);
+        }
+
+        #app {
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 0;
+            overflow: hidden;
+        }
+
+        #home-screen {
+            min-height: 80vh;
+        }
+
+        .title { 
+            text-align: center; 
+            margin-bottom: 0.2rem; 
+            color: var(--primary); 
+            font-size: 2.2rem;
+        }
+
+        .attribution {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+        
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .level-card {
+            padding: 1rem;
+            text-align: center;
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+        }
+
+        .level-card:hover { 
+            border-color: var(--primary); 
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .level-card.completed { 
+            border-color: var(--success); 
+            background: #f0fdf4; 
+        }
+
+        .home-footer-decor {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin: 2rem -2.5rem -2.5rem -2.5rem;
+            padding: 2rem 2.5rem;
+            background-color: var(--bg-turquoise);
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .footer-img {
+            width: 160px;
+            height: auto;
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
+        }
+
+        .footer-img:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        /* Challenge Modal Styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-overlay.show { display: flex; }
+        .challenge-modal {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+        }
+
+        /* Game UI */
+        .image-selection-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .image-option {
+            border: 3px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .image-option img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .image-option.selected {
+            border-color: var(--primary);
+            background: #f0fdfa;
+        }
+
+        .input-group { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin: 1rem 0; 
+            flex-wrap: wrap; 
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .display-box {
+            min-height: 60px;
+            background: #fff;
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 10px;
+            position: relative;
+        }
+
+        .chip {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 4px;
+        }
+
+        .selection-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        input[type="number"], select {
+            padding: 0.5rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.25rem;
+            text-align: center;
+        }
+
+        .shell-input { width: 45px; }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary { background: var(--primary); color: white; width: 100%; }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: #64748b; }
+        .btn-success { background: var(--success); color: white; width: 100%; }
+        
+        .btn-hint { 
+            background: var(--hint-bg); 
+            color: var(--hint-text); 
+            border: 1px solid #fde047; 
+            padding: 0.4rem 0.8rem; 
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .hint-box {
+            background: var(--hint-bg);
+            color: var(--hint-text);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #fde047;
+            display: none;
+        }
+        .hint-box.show { display: block; }
+
+        .feedback {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .feedback.show { display: block; }
+        .feedback.correct { background: #dcfce7; color: #166534; }
+        .feedback.wrong { background: #fee2e2; color: #991b1b; }
+
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .badge { background: #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; }
+        .badge-timer { background: #fee2e2; color: #991b1b; }
+        .badge-score { background: #dcfce7; color: #166534; }
+
+        @media (max-width: 600px) {
+            .level-grid { grid-template-columns: repeat(2, 1fr); }
+            .footer-img { width: 110px; }
+            .home-footer-decor { margin: 1.5rem -1.5rem -1.5rem -1.5rem; padding: 1.5rem; }
+            .card { padding: 1.5rem; }
+            .title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body class="home-active">
+
+<div id="app">
+    <div id="home-screen" class="card">
+        <h1 class="title">🧪 Formula Master Quest</h1>
+        <div class="attribution">designed by Ms Khoo Xiang Yun</div>
+        <p style="text-align:center; color: #64748b; margin-bottom: 0;">Master bonding through step-by-step analysis.</p>
+        
+        <div class="level-grid" id="level-list">
+            <!-- Questions/Levels appear here -->
+        </div>
+
+        <div class="home-footer-decor">
+            <img src="https://lh3.googleusercontent.com/d/1QWOZgXcOYZXMtmfMFOoMEDR_e3SuMoQ1" class="footer-img" alt="Ionic Blank">
+            <img src="https://lh3.googleusercontent.com/d/1erPk4yIeia1SdiSozLvolWllGA517LvC" class="footer-img" alt="Covalent Blank">
+        </div>
+    </div>
+
+    <!-- Gameplay Area -->
+    <div id="game-screen" class="card" style="display:none">
+        <div class="progress-header">
+            <button class="btn-outline" id="back-btn" onclick="showHome()">← Back</button>
+            <div id="stats-container" style="display: flex; gap: 8px; align-items: center;">
+                <span id="current-compound-name" style="font-weight:bold; font-size: 1.2rem; color: var(--primary)"></span>
+            </div>
+            <span class="badge" id="step-count">Step 1/5</span>
+        </div>
+
+        <div id="history-area" style="background: #f8fafc; border-radius: 0.5rem; padding: 10px; margin-bottom: 1rem; display: none;">
+            <div id="history-list"></div>
+        </div>
+
+        <div id="step-ui"></div>
+
+        <div id="feedback" class="feedback"></div>
+        <button id="submit-btn" class="btn-primary" style="margin-top:1rem">Check Answer</button>
+    </div>
+</div>
+
+<!-- Modal for Challenge Invitation -->
+<div id="challenge-modal-overlay" class="modal-overlay">
+    <div class="challenge-modal">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+        <h2>Course Completed!</h2>
+        <p>You've mastered the basics. Are you ready for the 1-minute <strong>Formula Mastery Challenge</strong>?</p>
+        <button class="btn-success" onclick="startChallenge()">Accept Challenge!</button>
+        <button class="btn-outline" style="width:100%; margin-top: 10px;" onclick="closeChallengeModal()">Maybe Later</button>
+    </div>
+</div>
+
+<script>
+    // Core Levels (6 main tutorial steps)
+    const compounds = [
+        { id: 'nacl', name: "Sodium Chloride", type: 'ionic', config: { a: [2,8,1], b: [2,8,7] }, goal: { a: ['lose', 1], b: ['gain', 1] }, ions: { a: 'Na+', b: 'Cl-' }, formula: 'NaCl', symbols: ['Na', 'Cl'] },
+        { id: 'mgf2', name: "Magnesium Fluoride", type: 'ionic', config: { a: [2,8,2], b: [2,7] }, goal: { a: ['lose', 2], b: ['gain', 1] }, ions: { a: 'Mg2+', b: 'F-' }, formula: 'MgF2', symbols: ['Mg', 'F'] },
+        { id: 'al2o3', name: "Aluminium Oxide", type: 'ionic', config: { a: [2,8,3], b: [2,6] }, goal: { a: ['lose', 3], b: ['gain', 2] }, ions: { a: 'Al3+', b: 'O2-' }, formula: 'Al2O3', symbols: ['Al', 'O'] },
+        { id: 'ch4', name: "Methane", type: 'covalent', config: { a: [2,4], b: [1] }, goal: { a: ['needs', 4], b: ['needs', 1] }, center: 'Carbon', formula: 'CH4', symbols: ['C', 'H'] },
+        { id: 'nh3', name: "Ammonia", type: 'covalent', config: { a: [2,5], b: [1] }, goal: { a: ['needs', 3], b: ['needs', 1] }, center: 'Nitrogen', formula: 'NH3', symbols: ['N', 'H'] },
+        { id: 'co2', name: "Carbon Dioxide", type: 'covalent', config: { a: [2,4], b: [2,6] }, goal: { a: ['needs', 4], b: ['needs', 2] }, center: 'Carbon', formula: 'CO2', symbols: ['C', 'O'] }
+    ];
+
+    // Extended Pool for Challenge Mode (30 compounds)
+    const challengePool = [
+        ...compounds,
+        { name: "Lithium Fluoride", type: 'ionic', formula: 'LiF', symbols: ['Li', 'F'] },
+        { name: "Lithium Chloride", type: 'ionic', formula: 'LiCl', symbols: ['Li', 'Cl'] },
+        { name: "Sodium Fluoride", type: 'ionic', formula: 'NaF', symbols: ['Na', 'F'] },
+        { name: "Sodium Oxide", type: 'ionic', formula: 'Na2O', symbols: ['Na', 'O'] },
+        { name: "Sodium Sulfide", type: 'ionic', formula: 'Na2S', symbols: ['Na', 'S'] },
+        { name: "Potassium Chloride", type: 'ionic', formula: 'KCl', symbols: ['K', 'Cl'] },
+        { name: "Potassium Fluoride", type: 'ionic', formula: 'KF', symbols: ['K', 'F'] },
+        { name: "Potassium Oxide", type: 'ionic', formula: 'K2O', symbols: ['K', 'O'] },
+        { name: "Magnesium Oxide", type: 'ionic', formula: 'MgO', symbols: ['Mg', 'O'] },
+        { name: "Magnesium Chloride", type: 'ionic', formula: 'MgCl2', symbols: ['Mg', 'Cl'] },
+        { name: "Calcium Oxide", type: 'ionic', formula: 'CaO', symbols: ['Ca', 'O'] },
+        { name: "Calcium Chloride", type: 'ionic', formula: 'CaCl2', symbols: ['Ca', 'Cl'] },
+        { name: "Calcium Fluoride", type: 'ionic', formula: 'CaF2', symbols: ['Ca', 'F'] },
+        { name: "Aluminium Chloride", type: 'ionic', formula: 'AlCl3', symbols: ['Al', 'Cl'] },
+        { name: "Aluminium Fluoride", type: 'ionic', formula: 'AlF3', symbols: ['Al', 'F'] },
+        { name: "Beryllium Oxide", type: 'ionic', formula: 'BeO', symbols: ['Be', 'O'] },
+        { name: "Water", type: 'covalent', formula: 'H2O', symbols: ['H', 'O'] },
+        { name: "Hydrogen Chloride", type: 'covalent', formula: 'HCl', symbols: ['H', 'Cl'] },
+        { name: "Hydrogen Sulfide", type: 'covalent', formula: 'H2S', symbols: ['H', 'S'] },
+        { name: "Phosphine (phosphorus and hydrogen)", type: 'covalent', formula: 'PH3', symbols: ['P', 'H'] },
+        { name: "Silicon Tetrachloride", type: 'covalent', formula: 'SiCl4', symbols: ['Si', 'Cl'] },
+        { name: "Silicon Dioxide", type: 'covalent', formula: 'SiO2', symbols: ['Si', 'O'] },
+        { name: "Carbon Tetrachloride", type: 'covalent', formula: 'CCl4', symbols: ['C', 'Cl'] },
+        { name: "Nitrogen Trichloride", type: 'covalent', formula: 'NCl3', symbols: ['N', 'Cl'] }
+    ];
+
+    let currentCompound = null;
+    let currentStep = 1;
+    let selectedBondType = null;
+    let stepAnswers = {}; 
+    let builderState = { ionA: '', ionB: '', formula: [] };
+    let completed = JSON.parse(localStorage.getItem('chem_formula_completed') || '[]');
+    
+    // Challenge state
+    let isChallengeMode = false;
+    let challengeTimer = null;
+    let challengeTimeRemaining = 60;
+    let challengeScore = 0;
+    let challengeHighScore = localStorage.getItem('chem_challenge_high') || 0;
+
+    const subMap = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
+    const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺', '-': '⁻' };
+
+    const IMAGE_URLS = {
+        ionic: "https://lh3.googleusercontent.com/d/1qan1hPByKhA_LbvlmwSRdsIZc3vqcmVB",
+        covalent: "https://lh3.googleusercontent.com/d/1QpDiLAVSf0oN3aKz4YQ32HtWS9P8XSNs"
+    };
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, type, duration, startOffset = 0) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startOffset);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime + startOffset);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startOffset + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + startOffset);
+        osc.stop(audioCtx.currentTime + startOffset + duration);
+    }
+
+    function soundCorrect() {
+        playTone(523.25, 'sine', 0.1); 
+        setTimeout(() => playTone(659.25, 'sine', 0.2), 50); 
+    }
+
+    function soundWrong() {
+        playTone(220, 'triangle', 0.3); 
+        playTone(207.65, 'triangle', 0.5, 0.1); 
+    }
+
+    function soundFanfare() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => playTone(freq, 'square', 0.3, i * 0.15));
+    }
+
+    function formatChem(text) {
+        if (!text) return "";
+        let result = "";
+        let i = 0;
+        while (i < text.length) {
+            let char = text[i];
+            if ((currentStep === 4 && !isChallengeMode) || text.includes('+') || text.includes('-')) {
+                let remaining = text.substring(i);
+                let chargeMatch = remaining.match(/^(\d*[+-])/);
+                if (chargeMatch) {
+                    let chargeStr = chargeMatch[1];
+                    for (let c of chargeStr) result += supMap[c] || c;
+                    i += chargeStr.length;
+                    continue;
+                }
+            }
+            if (/[0-9]/.test(char) && i > 0 && /[a-zA-Z]/.test(text[i-1])) {
+                result += subMap[char] || char;
+            } else {
+                result += char;
+            }
+            i++;
+        }
+        return result;
+    }
+
+    function selectBondType(type) {
+        selectedBondType = type;
+        document.querySelectorAll('.image-option').forEach(el => el.classList.remove('selected'));
+        document.getElementById(`opt-${type}`).classList.add('selected');
+    }
+
+    function closeChallengeModal() {
+        document.getElementById('challenge-modal-overlay').classList.remove('show');
+    }
+
+    function showHome() {
+        if (challengeTimer) clearInterval(challengeTimer);
+        isChallengeMode = false;
+        document.body.className = "home-active";
+        document.getElementById('home-screen').style.display = 'flex';
+        document.getElementById('game-screen').style.display = 'none';
+        renderHome();
+        
+        if (completed.length === compounds.length && !localStorage.getItem('challenge_seen')) {
+            document.getElementById('challenge-modal-overlay').classList.add('show');
+            localStorage.setItem('challenge_seen', 'true');
+        }
+    }
+
+    function renderHome() {
+        const list = document.getElementById('level-list');
+        list.innerHTML = '';
+        compounds.forEach(c => {
+            const div = document.createElement('div');
+            div.className = `level-card ${completed.includes(c.id) ? 'completed' : ''}`;
+            div.innerHTML = `
+                <div style="font-size: 1.2rem; margin-bottom: 0.2rem;">${completed.includes(c.id) ? '✅' : '🧪'}</div>
+                <strong style="display:block; color: #1e293b; font-size: 0.85rem; line-height: 1.1;">${c.name}</strong>
+                <small style="color:var(--primary); font-weight: bold; margin-top: 5px;">${completed.includes(c.id) ? formatChem(c.formula) : 'Start'}</small>
+            `;
+            div.onclick = () => startLevel(c);
+            list.appendChild(div);
+        });
+
+        if (completed.length === compounds.length) {
+            const chalBtn = document.createElement('div');
+            chalBtn.className = 'level-card';
+            chalBtn.style.background = 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)';
+            chalBtn.style.color = 'white';
+            chalBtn.style.border = 'none';
+            chalBtn.innerHTML = `
+                <div style="font-size: 1.2rem;">🏆</div>
+                <strong style="font-size: 0.85rem;">Mastery Challenge</strong>
+                <small style="opacity: 0.9">High Score: ${challengeHighScore}</small>
+            `;
+            chalBtn.onclick = startChallenge;
+            list.appendChild(chalBtn);
+        }
+    }
+
+    function startLevel(compound) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.body.className = "game-active";
+        currentCompound = compound;
+        currentStep = 1;
+        isChallengeMode = false;
+        selectedBondType = null;
+        stepAnswers = {};
+        builderState = { ionA: '', ionB: '', formula: [] };
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('current-compound-name').innerText = compound.name;
+        document.getElementById('back-btn').style.display = 'block';
+        renderStep();
+    }
+
+    function startChallenge() {
+        closeChallengeModal();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        document.body.className = "game-active";
+        isChallengeMode = true;
+        challengeScore = 0;
+        challengeTimeRemaining = 60;
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('back-btn').style.display = 'none';
+        
+        pickChallengeCompound();
+        
+        challengeTimer = setInterval(() => {
+            challengeTimeRemaining--;
+            updateChallengeStats();
+            if (challengeTimeRemaining <= 0) {
+                endChallenge();
+            }
+        }, 1000);
+    }
+
+    function pickChallengeCompound() {
+        const prevId = currentCompound?.name;
+        let pool = challengePool.filter(c => c.name !== prevId);
+        currentCompound = pool[Math.floor(Math.random() * pool.length)];
+        builderState = { ionA: '', ionB: '', formula: [] };
+        renderStep();
+    }
+
+    function updateChallengeStats() {
+        const stats = document.getElementById('stats-container');
+        stats.innerHTML = `
+            <div id="current-compound-name" style="font-weight:bold; font-size: 1.2rem; color: var(--primary); margin-right: 10px;">${currentCompound.name}</div>
+            <span class="badge badge-timer">⏱️ ${challengeTimeRemaining}s</span>
+            <span class="badge" style="background: #dcfce7; color: #166534;">⭐ Score: ${challengeScore}</span>
+        `;
+        document.getElementById('step-count').innerText = "CHALLENGE";
+    }
+
+    function endChallenge() {
+        clearInterval(challengeTimer);
+        // Play fanfare sound upon challenge completion
+        soundFanfare();
+        
+        if (challengeScore > challengeHighScore) {
+            challengeHighScore = challengeScore;
+            localStorage.setItem('chem_challenge_high', challengeHighScore);
+        }
+
+        const ui = document.getElementById('step-ui');
+        ui.innerHTML = `
+            <div style="text-align:center; padding: 2rem;">
+                <h2 style="color:var(--primary)">Time's Up!</h2>
+                <div style="font-size: 4rem; margin: 1rem 0;">🏁</div>
+                <p style="font-size: 1.2rem">You correctly identified <strong>${challengeScore}</strong> formulas!</p>
+                <p>High Score: ${challengeHighScore}</p>
+                <button class="btn-primary" onclick="startChallenge()">Play Again</button>
+                <button class="btn-outline" style="width:100%; margin-top:10px" onclick="showHome()">Return Home</button>
+            </div>
+        `;
+        document.getElementById('submit-btn').style.display = 'none';
+        document.getElementById('feedback').style.display = 'none';
+    }
+
+    function updateHistory() {
+        const historyArea = document.getElementById('history-area');
+        const historyList = document.getElementById('history-list');
+        if (isChallengeMode || Object.keys(stepAnswers).length === 0) {
+            historyArea.style.display = 'none';
+            return;
+        }
+        historyArea.style.display = 'block';
+        historyList.innerHTML = '';
+        Object.keys(stepAnswers).forEach(stepNum => {
+            const div = document.createElement('div');
+            div.innerHTML = `<small style="color:#64748b">Step ${stepNum}:</small> <span style="font-weight:bold">${stepAnswers[stepNum]}</span>`;
+            historyList.appendChild(div);
+        });
+    }
+
+    function updateBuilderUI() {
+        if (!isChallengeMode && currentStep === 4 && currentCompound.type === 'ionic') {
+            document.getElementById('display-ion-a').innerText = formatChem(currentCompound.symbols[0] + builderState.ionA);
+            document.getElementById('display-ion-b').innerText = formatChem(currentCompound.symbols[1] + builderState.ionB);
+        } else if (isChallengeMode || currentStep === 5) {
+            document.getElementById('display-formula').innerText = formatChem(builderState.formula.join(''));
+        }
+    }
+
+    function addToFormula(val) {
+        builderState.formula.push(val);
+        updateBuilderUI();
+    }
+
+    function clearFormula() {
+        builderState.formula = [];
+        updateBuilderUI();
+    }
+
+    function renderStep() {
+        const ui = document.getElementById('step-ui');
+        const feedback = document.getElementById('feedback');
+        const submit = document.getElementById('submit-btn');
+        const stepCount = document.getElementById('step-count');
+        
+        submit.style.display = 'block';
+        updateHistory();
+        feedback.className = 'feedback';
+        
+        if (isChallengeMode) {
+            updateChallengeStats();
+            submit.innerText = "Check Formula";
+            ui.innerHTML = `
+                <h3 style="text-align:center">Construct the Formula</h3>
+                <div class="builder-area">
+                    <div id="display-formula" class="display-box">
+                        <span style="position:absolute; right:10px; font-size:0.6rem; cursor:pointer; color:red" onclick="clearFormula()">RESET</span>
+                    </div>
+                    <div class="selection-row" style="justify-content: center;">
+                        ${currentCompound.symbols.map(s => `<div class="chip" onclick="addToFormula('${s}')">${s}</div>`).join('')}
+                        ${[2, 3, 4].map(n => `<div class="chip" onclick="addToFormula('${n}')">${subMap[n]}</div>`).join('')}
+                    </div>
+                </div>
+            `;
+            updateBuilderUI();
+            submit.onclick = validate;
+            return;
+        }
+
+        stepCount.innerText = `Step ${currentStep}/5`;
+        submit.innerText = currentStep === 5 ? "Complete Challenge" : "Check Answer";
+
+        let html = `
+            <button class="btn-hint" onclick="document.getElementById('hint-box').classList.toggle('show')">💡 Get a Hint</button>
+            <div id="hint-box" class="hint-box">${getHint()}</div>
+        `;
+        
+        switch(currentStep) {
+            case 1:
+                html += `
+                    <h3>Step 1: Determine Type of Bonding</h3>
+                    <div class="image-selection-container">
+                        <div id="opt-ionic" class="image-option" onclick="selectBondType('ionic')">
+                            <img src="${IMAGE_URLS.ionic}" alt="Ionic">
+                            <span>Ionic bonding</span>
+                        </div>
+                        <div id="opt-covalent" class="image-option" onclick="selectBondType('covalent')">
+                            <img src="${IMAGE_URLS.covalent}" alt="Covalent">
+                            <span>Covalent bonding</span>
+                        </div>
+                    </div>`;
+                break;
+            case 2:
+                html += `
+                    <h3>Step 2: Electronic Configurations</h3>
+                    <div class="input-group">
+                        <span>${currentCompound.symbols[0]}: </span>
+                        ${currentCompound.config.a.map(() => `<input type="number" class="shell-input shell-a" placeholder="?">`).join('.')}
+                    </div>
+                    <div class="input-group">
+                        <span>${currentCompound.symbols[1]}: </span>
+                        ${currentCompound.config.b.map(() => `<input type="number" class="shell-input shell-b" placeholder="?">`).join('.')}
+                    </div>`;
+                break;
+            case 3:
+                const isIonic = currentCompound.type === 'ionic';
+                html += `
+                    <h3>Step 3: Gain/Loss for Stability</h3>
+                    <div class="input-group">
+                        <span>${currentCompound.symbols[0]} will: </span>
+                        <select id="action-a">
+                            <option value="">Choose...</option>
+                            <option value="${isIonic ? 'lose' : 'needs'}">${isIonic ? 'Lose' : 'Share (needs)'}</option>
+                            <option value="${isIonic ? 'gain' : 'ignore'}">${isIonic ? 'Gain' : 'N/A'}</option>
+                        </select>
+                        <input type="number" id="num-a" class="shell-input" placeholder="0"> electrons.
+                    </div>
+                    <div class="input-group">
+                        <span>${currentCompound.symbols[1]} will: </span>
+                        <select id="action-b">
+                            <option value="">Choose...</option>
+                            <option value="gain">Gain</option>
+                            <option value="needs">Share (needs)</option>
+                            <option value="lose">Lose</option>
+                        </select>
+                        <input type="number" id="num-b" class="shell-input" placeholder="0"> electrons.
+                    </div>`;
+                break;
+            case 4:
+                if(currentCompound.type === 'ionic') {
+                    html += `
+                        <h3>Step 4: Build the Ions</h3>
+                        <div class="builder-area">
+                            <div>
+                                <strong>${currentCompound.symbols[0]} Ion:</strong>
+                                <div id="display-ion-a" class="display-box"></div>
+                                <div class="selection-row">
+                                    ${['+', '2+', '3+', '-', '2-'].map(c => `<div class="chip" onclick="builderState.ionA='${c}';updateBuilderUI()">${formatChem(c)}</div>`).join('')}
+                                </div>
+                            </div>
+                            <div style="margin-top: 15px">
+                                <strong>${currentCompound.symbols[1]} Ion:</strong>
+                                <div id="display-ion-b" class="display-box"></div>
+                                <div class="selection-row">
+                                    ${['+', '2+', '-', '2-', '3-'].map(c => `<div class="chip" onclick="builderState.ionB='${c}';updateBuilderUI()">${formatChem(c)}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    html += `
+                        <h3>Step 4: Central Atom</h3>
+                        <div class="input-group">
+                            <span>Which atom is central?</span>
+                            <select id="center-atom">
+                                <option value="">Select...</option>
+                                <option value="${currentCompound.symbols[0]}">${currentCompound.symbols[0]}</option>
+                                <option value="${currentCompound.symbols[1]}">${currentCompound.symbols[1]}</option>
+                            </select>
+                        </div>`;
+                }
+                break;
+            case 5:
+                html += `
+                    <h3>Step 5: Construct Final Formula</h3>
+                    <div class="builder-area">
+                        <div id="display-formula" class="display-box">
+                            <span style="position:absolute; right:10px; font-size:0.6rem; cursor:pointer; color:red" onclick="clearFormula()">RESET</span>
+                        </div>
+                        <div class="selection-row">
+                            ${currentCompound.symbols.map(s => `<div class="chip" onclick="addToFormula('${s}')">${s}</div>`).join('')}
+                            ${[2, 3, 4].map(n => `<div class="chip" onclick="addToFormula('${n}')">${subMap[n]}</div>`).join('')}
+                        </div>
+                    </div>`;
+                break;
+        }
+        ui.innerHTML = html;
+        if (currentStep >= 4) updateBuilderUI();
+        submit.onclick = validate;
+    }
+
+    function getHint() {
+        const s0 = currentCompound.symbols[0];
+        const s1 = currentCompound.symbols[1];
+        switch(currentStep) {
+            case 1: return `Is there a metal? ${s0} is ${['Na', 'Mg', 'Al', 'K', 'Ca', 'Li', 'Be'].includes(s0) ? 'a Metal' : 'a Non-metal'}. Metal + Non-metal = Ionic.`;
+            case 2: return `Atomic numbers: ${s0} is ${currentCompound.config.a.reduce((a,b)=>a+b)}, ${s1} is ${currentCompound.config.b.reduce((a,b)=>a+b)}.`;
+            case 3: return `Atoms want 8 outer electrons. ${s0} has ${currentCompound.config.a.slice(-1)}.`;
+            case 4: return currentCompound.type === 'ionic' ? "Losing electrons = positive charge." : "The central atom usually needs more electrons.";
+            case 5: return "Total charges must balance to zero in ionic compounds.";
+            default: return "";
+        }
+    }
+
+    function validate() {
+        const feedback = document.getElementById('feedback');
+        let isCorrect = false;
+        let summary = "";
+
+        if (isChallengeMode) {
+            isCorrect = builderState.formula.join('').toLowerCase() === currentCompound.formula.toLowerCase();
+            if (isCorrect) {
+                challengeScore++;
+                soundCorrect();
+                pickChallengeCompound();
+            } else {
+                soundWrong();
+                feedback.innerText = "Incorrect formula!";
+                feedback.className = "feedback wrong show";
+                // Reset formula back to blank on error in challenge mode
+                clearFormula();
+                setTimeout(() => feedback.classList.remove('show'), 800);
+            }
+            return;
+        }
+
+        if (currentStep === 1) {
+            isCorrect = selectedBondType === currentCompound.type;
+            summary = currentCompound.type.charAt(0).toUpperCase() + currentCompound.type.slice(1);
+        } else if (currentStep === 2) {
+            const valA = Array.from(document.querySelectorAll('.shell-a')).map(i => parseInt(i.value));
+            const valB = Array.from(document.querySelectorAll('.shell-b')).map(i => parseInt(i.value));
+            isCorrect = JSON.stringify(valA) === JSON.stringify(currentCompound.config.a) && 
+                        JSON.stringify(valB) === JSON.stringify(currentCompound.config.b);
+            summary = `${valA.join('.')} | ${valB.join('.')}`;
+        } else if (currentStep === 3) {
+            const actA = document.getElementById('action-a').value;
+            const numA = parseInt(document.getElementById('num-a').value);
+            const actB = document.getElementById('action-b').value;
+            const numB = parseInt(document.getElementById('num-b').value);
+            isCorrect = actA === currentCompound.goal.a[0] && numA === currentCompound.goal.a[1] &&
+                        actB === currentCompound.goal.b[0] && numB === currentCompound.goal.b[1];
+            summary = `${actA} ${numA} | ${actB} ${numB}`;
+        } else if (currentStep === 4) {
+            if (currentCompound.type === 'ionic') {
+                const ionA = (currentCompound.symbols[0] + builderState.ionA).toLowerCase().replace('1+', '+');
+                const ionB = (currentCompound.symbols[1] + builderState.ionB).toLowerCase().replace('1-', '-');
+                const targetA = currentCompound.ions.a.toLowerCase().replace('1+', '+');
+                const targetB = currentCompound.ions.b.toLowerCase().replace('1-', '-');
+                isCorrect = ionA === targetA && ionB === targetB;
+                summary = `${formatChem(currentCompound.ions.a)}, ${formatChem(currentCompound.ions.b)}`;
+            } else {
+                const center = document.getElementById('center-atom').value;
+                isCorrect = center === currentCompound.symbols[0];
+                summary = `Center: ${center}`;
+            }
+        } else if (currentStep === 5) {
+            isCorrect = builderState.formula.join('').toLowerCase() === currentCompound.formula.toLowerCase();
+        }
+
+        if (isCorrect) {
+            feedback.innerText = "Correct!";
+            feedback.className = "feedback correct show";
+            if (currentStep === 5) soundFanfare(); else soundCorrect();
+            stepAnswers[currentStep] = summary;
+            setTimeout(() => {
+                if (currentStep < 5) {
+                    currentStep++;
+                    renderStep();
+                } else {
+                    if (!completed.includes(currentCompound.id)) {
+                        completed.push(currentCompound.id);
+                        localStorage.setItem('chem_formula_completed', JSON.stringify(completed));
+                    }
+                    showHome();
+                }
+            }, 1000);
+        } else {
+            soundWrong();
+            feedback.innerText = "Try again!";
+            feedback.className = "feedback wrong show";
+            // For Level Step 5, also clear formula on error for better UX
+            if (currentStep === 5) clearFormula();
+        }
+    }
+    renderHome();
+</script>
+</body>
+</html>
