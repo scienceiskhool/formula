@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IonMaster - Chemistry Simulation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; touch-action: manipulation; }
+        .sub { vertical-align: sub; font-size: 0.7em; line-height: 0; position: relative; bottom: -0.2em; }
+        .sup { vertical-align: super; font-size: 0.7em; line-height: 0; position: relative; top: -0.2em; color: #4f46e5; font-weight: 800; }
+        .kb-btn { transition: all 0.1s ease; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .kb-btn:active { transform: scale(0.92); filter: brightness(0.9); }
+        .confetti { position: fixed; pointer-events: none; z-index: 999; }
+        @keyframes fall { 
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+        }
+        .screen-transition { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <!-- Header / Branding -->
+    <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                <i data-lucide="beaker" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-extrabold text-slate-800 leading-none">IonMaster</h1>
+                <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">created by Ms Khoo Xiang Yun</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1">
+            <!-- Mute Toggle -->
+            <button onclick="toggleMute()" id="mute-btn" class="p-2 hover:bg-slate-100 rounded-full transition text-slate-600">
+                <i data-lucide="volume-2" id="mute-icon" class="w-5 h-5"></i>
+            </button>
+            <!-- Fullscreen Toggle -->
+            <button onclick="toggleFullscreen()" class="p-2 hover:bg-slate-100 rounded-full transition text-slate-600">
+                <i data-lucide="maximize" id="fs-icon" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <main id="game-container" class="flex-grow flex flex-col items-center justify-center p-4 max-w-6xl mx-auto w-full relative">
+        <!-- Content Injected via JavaScript -->
+    </main>
+
+    <script>
+        // --- DATA ---
+        const LEVELS = {
+            1: [
+                { name: "Hydroxide", formula: "OH^-" },
+                { name: "Ammonium", formula: "NH4^+" },
+                { name: "Carbonate", formula: "CO3^2-" },
+                { name: "Sulfate", formula: "SO4^2-" },
+                { name: "Nitrate", formula: "NO3^-" },
+                { name: "Phosphate", formula: "PO4^3-" },
+                { name: "Silver", formula: "Ag^+" },
+                { name: "Zinc", formula: "Zn^2+" },
+                { name: "Lead(II)", formula: "Pb^2+" },
+                { name: "Iron(III)", formula: "Fe^3+" },
+                { name: "Copper(II)", formula: "Cu^2+" },
+                { name: "Iron(II)", formula: "Fe^2+" },
+                { name: "Copper(I)", formula: "Cu^+" }
+            ],
+            2: [
+                { name: "sodium chloride", formula: "NaCl" },
+                { name: "sodium oxide", formula: "Na2O" },
+                { name: "magnesium oxide", formula: "MgO" },
+                { name: "magnesium chloride", formula: "MgCl2" },
+                { name: "calcium chloride", formula: "CaCl2" },
+                { name: "copper(II) chloride", formula: "CuCl2" },
+                { name: "copper(II) oxide", formula: "CuO" },
+                { name: "sodium nitride", formula: "Na3N" },
+                { name: "silver oxide", formula: "Ag2O" },
+                { name: "aluminium oxide", formula: "Al2O3" },
+                { name: "aluminium chloride", formula: "AlCl3" },
+                { name: "aluminium nitride", formula: "AlN" },
+                { name: "zinc chloride", formula: "ZnCl2" },
+                { name: "zinc nitride", formula: "Zn3N2" },
+                { name: "lead(II) chloride", formula: "PbCl2" }
+            ],
+            3: [
+                { name: "ammonium chloride", formula: "NH4Cl" },
+                { name: "ammonium carbonate", formula: "(NH4)2CO3" },
+                { name: "ammonium nitrate", formula: "NH4NO3" },
+                { name: "sodium hydroxide", formula: "NaOH" },
+                { name: "magnesium hydroxide", formula: "Mg(OH)2" },
+                { name: "magnesium carbonate", formula: "MgCO3" },
+                { name: "aluminium sulfate", formula: "Al2(SO4)3" },
+                { name: "sodium phosphate", formula: "Na3PO4" },
+                { name: "calcium nitrate", formula: "Ca(NO3)2" },
+                { name: "silver nitrate", formula: "AgNO3" },
+                { name: "silver sulfate", formula: "Ag2SO4" },
+                { name: "copper(II) nitrate", formula: "Cu(NO3)2" },
+                { name: "copper(II) sulfate", formula: "CuSO4" },
+                { name: "silver carbonate", formula: "Ag2CO3" },
+                { name: "zinc hydroxide", formula: "Zn(OH)2" },
+                { name: "iron(III) hydroxide", formula: "Fe(OH)3" },
+                { name: "iron(III) sulfate", formula: "Fe2(SO4)3" }
+            ]
+        };
+
+        // --- APP STATE ---
+        let state = {
+            screen: 'START', 
+            level: 1,
+            score: 0,
+            combo: 0,
+            timeLeft: 60,
+            currentQuestion: null,
+            input: "", 
+            history: [],
+            timerInterval: null,
+            isMuted: false
+        };
+
+        // --- AUDIO ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bgMusic = new Audio();
+        bgMusic.loop = true;
+
+        function playLevelMusic(level) {
+            bgMusic.src = `Quiz Rush ${level}.mp3`;
+            bgMusic.currentTime = 0;
+            if (!state.isMuted) {
+                bgMusic.play().catch(e => console.log("Audio play blocked by browser."));
+            }
+        }
+
+        function stopMusic() {
+            bgMusic.pause();
+        }
+
+        function toggleMute() {
+            state.isMuted = !state.isMuted;
+            bgMusic.muted = state.isMuted;
+            const icon = document.getElementById('mute-icon');
+            icon.setAttribute('data-lucide', state.isMuted ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
+        }
+
+        function playSynth(freq, type, duration, vol = 0.1) {
+            if (state.isMuted) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        const sounds = {
+            correct: () => { playSynth(880, 'sine', 0.3); playSynth(1100, 'sine', 0.4); },
+            wrong: () => { playSynth(150, 'sawtooth', 0.4, 0.05); },
+            gameover: () => { [440, 330, 220].forEach((f, i) => setTimeout(() => playSynth(f, 'square', 0.5, 0.02), i * 200)); },
+            fanfare: () => { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playSynth(f, 'triangle', 0.6, 0.05), i * 150)); }
+        };
+
+        // --- CORE LOGIC ---
+        function setScreen(newScreen) {
+            state.screen = newScreen;
+            if (newScreen === 'START') stopMusic();
+            render();
+            lucide.createIcons();
+        }
+
+        function startQuiz(level) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            state.level = level;
+            state.score = 0;
+            state.combo = 0;
+            state.timeLeft = 60;
+            state.history = [];
+            state.input = "";
+            state.screen = 'PLAYING';
+            
+            playLevelMusic(level);
+            nextQuestion();
+            
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                state.timeLeft--;
+                if (state.timeLeft <= 0) {
+                    endGame();
+                } else {
+                    renderStats();
+                }
+            }, 1000);
+            render();
+            lucide.createIcons();
+        }
+
+        function nextQuestion() {
+            const pool = LEVELS[state.level];
+            let nextQ;
+            do {
+                nextQ = pool[Math.floor(Math.random() * pool.length)];
+            } while (state.currentQuestion && nextQ.name === state.currentQuestion.name && pool.length > 1);
+            
+            state.currentQuestion = nextQ;
+            state.input = "";
+            
+            const questionEl = document.getElementById('current-question-text');
+            if (questionEl) questionEl.innerText = state.currentQuestion.name;
+            renderInput();
+        }
+
+        function handleKey(char) {
+            if (char === '^' && state.input.endsWith('^')) return; 
+            state.input += char;
+            renderInput();
+        }
+
+        function backspace() {
+            state.input = state.input.slice(0, -1);
+            renderInput();
+        }
+
+        function checkAnswer() {
+            if (!state.currentQuestion) return;
+            
+            const isCorrect = state.input === state.currentQuestion.formula;
+            
+            state.history.push({
+                q: state.currentQuestion.name,
+                correct: isCorrect,
+                userAns: state.input,
+                actual: state.currentQuestion.formula
+            });
+
+            if (isCorrect) {
+                state.score += (10 * (state.combo + 1));
+                state.combo++;
+                sounds.correct();
+                showFeedback(true);
+            } else {
+                state.combo = 0;
+                sounds.wrong();
+                showFeedback(false);
+            }
+            
+            renderStats();
+            nextQuestion();
+        }
+
+        function endGame() {
+            clearInterval(state.timerInterval);
+            stopMusic();
+            const currentHighscore = parseInt(localStorage.getItem(`ionmaster_hs_l${state.level}`) || 0);
+            
+            state.isNewHighscore = false;
+            if (state.score > currentHighscore) {
+                localStorage.setItem(`ionmaster_hs_l${state.level}`, state.score);
+                state.isNewHighscore = true;
+                triggerConfetti();
+                sounds.fanfare();
+            } else {
+                sounds.gameover();
+            }
+            setScreen('RESULT');
+        }
+
+        // --- FORMATTING LOGIC ---
+        function formatFormula(str) {
+            if (!str) return '<span class="text-slate-300">...</span>';
+            let html = "";
+            let i = 0;
+            while (i < str.length) {
+                if (str[i] === '^') {
+                    i++;
+                    let charge = "";
+                    while (i < str.length && /[0-9\+\-]/.test(str[i])) {
+                        charge += str[i];
+                        i++;
+                    }
+                    html += `<span class="sup">${charge || '^'}</span>`;
+                } else if (/[0-9]/.test(str[i])) {
+                    html += `<span class="sub">${str[i]}</span>`;
+                    i++;
+                } else {
+                    html += str[i];
+                    i++;
+                }
+            }
+            return html;
+        }
+
+        // --- UI RENDERING ---
+        function render() {
+            const container = document.getElementById('game-container');
+            
+            if (state.screen === 'START') {
+                const hs1 = localStorage.getItem('ionmaster_hs_l1') || 0;
+                const hs2 = localStorage.getItem('ionmaster_hs_l2') || 0;
+                const hs3 = localStorage.getItem('ionmaster_hs_l3') || 0;
+
+                container.innerHTML = `
+                    <div class="text-center screen-transition">
+                        <div class="bg-indigo-600 text-white w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-indigo-200">
+                            <i data-lucide="atom" class="w-12 h-12"></i>
+                        </div>
+                        <h2 class="text-4xl font-black mb-2 tracking-tight text-slate-800">IonMaster</h2>
+                        <p class="text-slate-500 mb-10 max-w-xs mx-auto font-medium">Master chemical notation and formulas with Ms Khoo.</p>
+                        
+                        <div class="grid gap-3 w-full max-w-sm mx-auto">
+                            <button onclick="setScreen('TUTORIAL')" class="bg-white border-2 border-slate-200 p-4 rounded-2xl font-bold hover:border-indigo-400 hover:text-indigo-600 transition flex items-center justify-center gap-2 shadow-sm">
+                                <i data-lucide="book-open" class="w-5 h-5"></i> Tutorial Mode
+                            </button>
+                            <div class="h-px bg-slate-200 my-2"></div>
+                            
+                            <button onclick="startQuiz(1)" class="group bg-indigo-600 text-white p-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition relative overflow-hidden">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-left">
+                                        <span>Level 1: Common Ions</span>
+                                        <div class="text-[10px] opacity-70 font-medium">BEST: ${hs1}</div>
+                                    </div>
+                                    <i data-lucide="chevron-right"></i>
+                                </div>
+                            </button>
+
+                            <button onclick="startQuiz(2)" class="group bg-indigo-600 text-white p-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-left">
+                                        <span>Level 2: Basic Compounds</span>
+                                        <div class="text-[10px] opacity-70 font-medium">BEST: ${hs2}</div>
+                                    </div>
+                                    <i data-lucide="chevron-right"></i>
+                                </div>
+                            </button>
+
+                            <button onclick="startQuiz(3)" class="group bg-indigo-600 text-white p-5 rounded-2xl font-bold shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="text-left">
+                                        <span>Level 3: Polyatomic Compounds</span>
+                                        <div class="text-[10px] opacity-70 font-medium">BEST: ${hs3}</div>
+                                    </div>
+                                    <i data-lucide="chevron-right"></i>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (state.screen === 'TUTORIAL') {
+                container.innerHTML = `
+                    <div class="max-w-md w-full bg-white p-8 rounded-[2.5rem] shadow-2xl screen-transition">
+                        <h3 class="text-2xl font-black mb-6 text-slate-800">Keyboard Guide</h3>
+                        <div class="space-y-6 text-slate-600 mb-8">
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600 mt-1 font-bold">Na</div>
+                                <div><p class="font-bold text-slate-800">Elements & Brackets</p><p class="text-sm">Tap symbols normally to add them.</p></div>
+                            </div>
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600 mt-1 font-bold">2</div>
+                                <div><p class="font-bold text-slate-800">Subscripts</p><p class="text-sm">Numbers automatically become <sub>subscripts</sub> unless following a ^.</p></div>
+                            </div>
+                            <div class="flex gap-4 items-start">
+                                <div class="bg-indigo-600 p-2 rounded-lg text-white mt-1 font-bold">^</div>
+                                <div><p class="font-bold text-slate-800">Charges (Superscripts)</p><p class="text-sm">Tap <span class="font-bold text-indigo-600">^</span> once, THEN type the charge (e.g. ^2+).</p></div>
+                            </div>
+                        </div>
+                        <button onclick="setScreen('START')" class="w-full bg-indigo-600 text-white p-5 rounded-2xl font-bold shadow-lg">Got it!</button>
+                    </div>
+                `;
+            } else if (state.screen === 'PLAYING') {
+                container.innerHTML = `
+                    <div class="w-full h-full flex flex-col screen-transition">
+                        <div id="stats-bar" class="flex justify-between items-center w-full mb-6 font-bold text-lg bg-white p-4 rounded-2xl shadow-sm border border-slate-100"></div>
+                        
+                        <div class="flex flex-col md:flex-row gap-8 items-start w-full">
+                            <div class="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left py-6 min-h-[300px]">
+                                <p class="text-slate-400 uppercase tracking-widest text-[10px] font-black mb-2">Write the formula for:</p>
+                                <h2 id="current-question-text" class="text-4xl md:text-6xl font-black mb-10 text-slate-800 leading-tight">${state.currentQuestion.name}</h2>
+                                
+                                <div id="input-display" class="bg-white border-b-4 border-indigo-200 min-w-full h-28 flex items-center justify-center md:justify-start text-4xl md:text-5xl font-mono px-8 rounded-3xl shadow-inner overflow-hidden">
+                                    ${formatFormula(state.input)}
+                                </div>
+                            </div>
+
+                            <div class="w-full md:w-1/2 flex flex-col">
+                                <div class="grid grid-cols-6 gap-2 w-full bg-slate-200 p-3 rounded-[2.5rem] shadow-inner mb-4">
+                                    ${['Na','Mg','Ca','Al','Ag','Zn','Pb','Fe','Cu','H','O','Cl','N','C','P','S','(',')','1','2','3','4','^','+','-'].map(k => `
+                                        <button onclick="handleKey('${k}')" class="kb-btn bg-white h-14 md:h-16 rounded-2xl font-extrabold shadow-sm text-slate-700 text-sm md:text-base ${k === '^' ? 'bg-indigo-600 text-white' : ''}">${k}</button>
+                                    `).join('')}
+                                    <button onclick="backspace()" class="kb-btn bg-rose-100 text-rose-600 h-14 md:h-16 rounded-2xl font-bold flex items-center justify-center"><i data-lucide="delete" class="w-5 h-5"></i></button>
+                                </div>
+                                <button onclick="checkAnswer()" class="kb-btn bg-emerald-600 text-white w-full h-20 rounded-3xl font-black text-2xl shadow-xl hover:bg-emerald-700 transition transform hover:-translate-y-1">SUBMIT ANSWER</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                renderStats();
+            } else if (state.screen === 'RESULT') {
+                const correctCount = state.history.filter(h => h.correct).length;
+                const total = state.history.length;
+                const scorePerc = total > 0 ? Math.round((correctCount/total)*100) : 0;
+                const hs = localStorage.getItem(`ionmaster_hs_l${state.level}`) || 0;
+                
+                container.innerHTML = `
+                    <div class="w-full max-w-2xl bg-white p-8 rounded-[2.5rem] shadow-2xl screen-transition flex flex-col max-h-[85vh]">
+                        <div class="text-center mb-8 flex-shrink-0">
+                            <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 rounded-full mb-4">
+                                <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
+                            </div>
+                            <h2 class="text-3xl font-black text-slate-800">Result</h2>
+                            <div class="relative inline-block">
+                                <p class="text-6xl font-black text-indigo-600 my-4">${state.score}</p>
+                                ${state.isNewHighscore ? '<span class="absolute -top-2 -right-12 bg-amber-400 text-white text-[10px] px-2 py-1 rounded-full font-black animate-pulse">NEW BEST!</span>' : ''}
+                            </div>
+                            <p class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Personal Best: ${hs}</p>
+                            <div class="flex justify-center gap-6 text-sm font-bold text-slate-500 uppercase tracking-tighter">
+                                <span>Accuracy: ${scorePerc}%</span>
+                                <span>Completed: ${total}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow overflow-y-auto mb-8 pr-2 space-y-3 custom-scrollbar">
+                            <h4 class="font-black text-slate-800 uppercase text-xs tracking-widest sticky top-0 bg-white py-2">Formula Review</h4>
+                            ${state.history.length === 0 ? '<p class="text-center py-4">No questions answered.</p>' : 
+                                state.history.map(h => `
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between ${h.correct ? 'bg-emerald-50' : 'bg-rose-50'} p-4 rounded-2xl border border-slate-100 gap-2">
+                                        <span class="font-bold text-slate-700">${h.q}</span>
+                                        <div class="flex items-center gap-3">
+                                            ${!h.correct ? `<span class="text-rose-400 line-through text-xs">${formatFormula(h.userAns)}</span>` : ''}
+                                            <i data-lucide="${h.correct ? 'check' : 'arrow-right'}" class="w-4 h-4 ${h.correct ? 'text-emerald-500' : 'text-slate-300'}"></i>
+                                            <span class="text-slate-900 font-black bg-white px-3 py-1 rounded-lg border border-slate-200">${formatFormula(h.actual)}</span>
+                                        </div>
+                                    </div>
+                                `).join('')
+                            }
+                        </div>
+
+                        <button onclick="setScreen('START')" class="w-full bg-slate-900 text-white p-5 rounded-2xl font-bold shadow-xl hover:bg-black transition flex-shrink-0">Play Again</button>
+                    </div>
+                `;
+            }
+        }
+
+        function renderStats() {
+            const stats = document.getElementById('stats-bar');
+            if (stats) {
+                stats.innerHTML = `
+                    <div class="flex items-center gap-2 ${state.timeLeft < 10 ? 'text-rose-600 animate-pulse' : 'text-slate-600'}">
+                        <i data-lucide="timer" class="w-5 h-5"></i>
+                        <span>${state.timeLeft}s</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-amber-500">
+                        <i data-lucide="zap" class="w-5 h-5 fill-current"></i>
+                        <span>x${state.combo}</span>
+                    </div>
+                    <div class="text-indigo-600 bg-indigo-50 px-4 py-1 rounded-full text-sm font-black">
+                        SCORE: ${state.score}
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        function renderInput() {
+            const el = document.getElementById('input-display');
+            if (el) el.innerHTML = formatFormula(state.input);
+        }
+
+        function showFeedback(isCorrect) {
+            const overlay = document.createElement('div');
+            overlay.className = `fixed inset-0 flex items-center justify-center z-[100] pointer-events-none`;
+            overlay.innerHTML = `
+                <div class="${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'} text-white px-10 py-5 rounded-[2rem] text-3xl font-black shadow-2xl animate-bounce">
+                    ${isCorrect ? 'CORRECT!' : 'WRONG'}
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.remove(), 700);
+        }
+
+        function triggerConfetti() {
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#a855f7'];
+            for (let i = 0; i < 60; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.width = Math.random() * 8 + 4 + 'px';
+                conf.style.height = conf.style.width;
+                conf.style.top = '-20px';
+                conf.style.borderRadius = i % 2 === 0 ? '50%' : '2px';
+                conf.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 5000);
+            }
+        }
+
+        function toggleFullscreen() {
+            const icon = document.getElementById('fs-icon');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {});
+                icon.setAttribute('data-lucide', 'minimize');
+            } else {
+                document.exitFullscreen();
+                icon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+
+        window.onload = () => {
+            setScreen('START');
+        };
+    </script>
+</body>
+</html>
