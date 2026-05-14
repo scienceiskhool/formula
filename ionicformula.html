@@ -131,7 +131,7 @@
         bgMusic.loop = true;
 
         function playLevelMusic(level) {
-            bgMusic.src = `Quiz Rush ${level}.mp3`;
+            bgMusic.src = `Quiz Rush {level}.mp3`;
             bgMusic.currentTime = 0;
             if (!state.isMuted) {
                 bgMusic.play().catch(e => console.log("Audio play blocked by browser."));
