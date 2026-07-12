@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ionic Bubble Puzzle</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --panel-bg: #16213e;
+            --accent-color: #e94560;
+            --text-color: #ffffff;
+            --border-color: #0f3460;
+            --success-color: #2ecc71;
+            --font-family: 'Courier New', Courier, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #000;
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        #main-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle at center, #2a2a4e 0%, #1a1a2e 100%);
+        }
+
+        #header {
+            width: 100%;
+            padding: 10px;
+            background: var(--panel-bg);
+            border-bottom: 3px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+
+        #canvas-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+            max-width: 100%;
+            max-height: 100%;
+            border-left: 2px solid var(--border-color);
+            border-right: 2px solid var(--border-color);
+            image-rendering: pixelated;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay-message {
+            background: rgba(22, 33, 62, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            border: 4px solid var(--border-color);
+            text-align: center;
+            pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 90%;
+            display: none;
+        }
+
+        .btn {
+            background: var(--accent-color);
+            color: white;
+            border: 2px solid #fff;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            font-family: inherit;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            margin-top: 15px;
+            box-shadow: 0 4px 0 #a02b40;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #a02b40;
+        }
+
+        #touch-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background-color: var(--panel-bg);
+            border-top: 3px solid var(--border-color);
+            width: 100%;
+            z-index: 10;
+        }
+
+        .control-btn {
+            background: #2c3e50;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 2rem;
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 var(--border-color);
+            touch-action: manipulation;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 var(--border-color);
+            background: #34495e;
+        }
+        
+        .control-btn#btn-shoot {
+            width: 90px;
+            background: var(--accent-color);
+            box-shadow: 0 6px 0 #a02b40;
+            border-color: #a02b40;
+        }
+
+        #analytics-panel {
+            width: 320px;
+            background: var(--panel-bg);
+            border-left: 3px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: margin-right 0.3s;
+        }
+        #analytics-panel.collapsed { margin-right: -320px; }
+        .panel-header {
+            padding: 15px; background: #0f2038; border-bottom: 2px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center; font-weight: bold;
+        }
+        #log-container {
+            flex: 1; overflow-y: auto; padding: 15px; font-size: 0.9rem; font-family: monospace;
+        }
+        .log-entry { margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+        .log-time { color: #888; font-size: 0.8em; margin-right: 5px; }
+
+        @media (max-width: 800px) {
+            #analytics-panel { position: absolute; right: 0; top: 0; height: 100%; z-index: 20; box-shadow: -5px 0 20px rgba(0,0,0,0.5); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="main-container">
+    <div id="game-area">
+        <div id="header">
+            <div style="flex: 1;">Score: <span id="score-display">0</span></div>
+            <div id="timer-display" style="flex: 1; text-align: center; color: var(--success-color); font-size: 1.4rem;">200s</div>
+            <div style="flex: 1; display: flex; justify-content: flex-end; gap: 10px;">
+                <button id="btn-audio" class="btn" style="padding: 5px 10px; font-size:1rem; margin:0;">🔊 Music: ON</button>
+                <button id="toggle-analytics" class="btn" style="padding: 5px 10px; font-size:1rem; margin:0;" title="Teacher Analytics">📊</button>
+            </div>
+        </div>
+
+        <div id="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div id="ui-layer">
+                <div id="start-screen" class="overlay-message" style="display: block;">
+                    <h2>Form Chemical Compounds!</h2>
+                    <p style="margin-bottom: 20px; font-size: 1rem; line-height:1.5;">
+                        Aim and shoot ions to build neutral compounds.<br>
+                        Match positive and negative charges to zero.<br>
+                        (e.g., shoot a Ca²⁺ at two Cl⁻ to form CaCl₂)
+                    </p>
+                    <button class="btn" id="btn-start">Start Game</button>
+                </div>
+
+                <div id="game-over-screen" class="overlay-message">
+                    <h2>Reaction Unstable!</h2>
+                    <p style="margin-bottom: 10px;">The ions reached the bottom.</p>
+                    <p style="margin-bottom: 10px; font-size: 1.2rem;">Final Score: <span id="final-score">0</span></p>
+                    
+                    <div id="compound-summary" style="max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: left; font-size: 0.95rem;">
+                        <!-- Summary injected via JS -->
+                    </div>
+
+                    <button class="btn" id="btn-restart">Try Again</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="touch-controls">
+            <button id="btn-left" class="control-btn" title="Aim Left">◀</button>
+            <button id="btn-shoot" class="control-btn" title="Shoot">🎯</button>
+            <button id="btn-right" class="control-btn" title="Aim Right">▶</button>
+        </div>
+    </div>
+
+    <div id="analytics-panel" class="collapsed">
+        <div class="panel-header">
+            <span>Teacher Analytics</span>
+            <button class="btn" id="close-analytics" style="margin:0; padding:4px 8px; font-size:0.9rem;">✕</button>
+        </div>
+        <div id="log-container"></div>
+        <div style="padding: 10px; text-align: center; border-top: 2px solid var(--border-color);">
+            <button class="btn" id="clear-log" style="margin:0; font-size:0.9rem;">Clear Log</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ION_BANK = [
+        // Cations (Softer Retro Warm Colors)
+        { id: 'Na', symbol: 'Na', chargeDisp: '⁺', charge: 1, type: 'cation', color: '#e67e22', poly: false, name: 'Sodium' }, 
+        { id: 'K', symbol: 'K', chargeDisp: '⁺', charge: 1, type: 'cation', color: '#f39c12', poly: false, name: 'Potassium' }, 
+        { id: 'Ca', symbol: 'Ca', chargeDisp: '²⁺', charge: 2, type: 'cation', color: '#f1c40f', poly: false, name: 'Calcium' }, 
+        { id: 'Mg', symbol: 'Mg', chargeDisp: '²⁺', charge: 2, type: 'cation', color: '#d35400', poly: false, name: 'Magnesium' }, 
+        { id: 'Al', symbol: 'Al', chargeDisp: '³⁺', charge: 3, type: 'cation', color: '#c0392b', poly: false, name: 'Aluminium' }, 
+        
+        // Anions (Softer Retro Cool Colors)
+        { id: 'Cl', symbol: 'Cl', chargeDisp: '⁻', charge: -1, type: 'anion', color: '#3498db', poly: false, name: 'Chloride' }, 
+        { id: 'F', symbol: 'F', chargeDisp: '⁻', charge: -1, type: 'anion', color: '#2980b9', poly: false, name: 'Fluoride' }, 
+        { id: 'O', symbol: 'O', chargeDisp: '²⁻', charge: -2, type: 'anion', color: '#2ecc71', poly: false, name: 'Oxide' }, 
+        { id: 'S', symbol: 'S', chargeDisp: '²⁻', charge: -2, type: 'anion', color: '#1abc9c', poly: false, name: 'Sulfide' }, 
+        { id: 'N', symbol: 'N', chargeDisp: '³⁻', charge: -3, type: 'anion', color: '#9b59b6', poly: false, name: 'Nitride' }, 
+        { id: 'SO4', symbol: 'SO₄', chargeDisp: '²⁻', charge: -2, type: 'anion', color: '#8e44ad', poly: true, name: 'Sulfate' } 
+    ];
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const logContainer = document.getElementById('log-container');
+    
+    // Game Constants
+    const COLS = 8; 
+    const SHIFT_THRESHOLD = 6; 
+    let RADIUS = 20; 
+    let COL_WIDTH = RADIUS * 2;
+    let ROW_HEIGHT = RADIUS * Math.sqrt(3);
+
+    let state = {
+        status: 'START', // START, PLAYING, GAMEOVER
+        settings: { bgm: true },
+        grid: [], // 2D array
+        compounds: {}, // Tracks formed compounds
+        score: 0,
+        shots: 0,
+        shotsSinceShift: 0,
+        shiftOffset: 0, 
+        particles: [],
+        floatingTexts: [],
+        projectile: null,
+        nextProjectile: null,
+        aimAngle: -Math.PI / 2,
+        aimingLeft: false,
+        aimingRight: false,
+        pointerDown: false,
+        pointerX: 0,
+        pointerY: 0,
+        startTime: 0,
+        timer: 200,
+        maxTime: 200,
+        lastTickTime: 0,
+        beakerBobBlinkTimer: 0
+    };
+
+    let audioCtx = null;
+    let bgmTimeout = null;
+    let nextNoteTime = 0;
+    let currentNote = 0;
+    // Simple chiptune melody
+    const melody = [261.6, 329.6, 392.0, 523.3, 392.0, 329.6, 261.6, 0, 293.7, 349.2, 440.0, 587.3, 440.0, 349.2, 293.7, 0];
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (state.settings.bgm && !bgmTimeout) {
+            nextNoteTime = audioCtx.currentTime + 0.1;
+            scheduleBGM();
+        }
+    }
+
+    function playNote(frequency, time, duration = 0.1) {
+        if (!frequency || !audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.value = frequency;
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        gain.gain.setValueAtTime(0.02, time); // Low volume
+        gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+        osc.start(time);
+        osc.stop(time + duration);
+    }
+
+    function scheduleBGM() {
+        if (state.status !== 'PLAYING' || !state.settings.bgm || !audioCtx) return;
+        while (nextNoteTime < audioCtx.currentTime + 0.1) {
+            playNote(melody[currentNote], nextNoteTime);
+            nextNoteTime += 0.25; 
+            currentNote = (currentNote + 1) % melody.length;
+        }
+        bgmTimeout = setTimeout(scheduleBGM, 50);
+    }
+
+    function playSound(type) {
+        if (!audioCtx || !state.settings.bgm) return;
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'shoot') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(400, t);
+            osc.frequency.exponentialRampToValueAtTime(800, t + 0.1);
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            osc.start(t);
+            osc.stop(t + 0.1);
+        } else if (type === 'pop') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(1200, t + 0.1);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+            osc.start(t);
+            osc.stop(t + 0.1);
+        } else if (type === 'error') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, t);
+            osc.frequency.exponentialRampToValueAtTime(100, t + 0.3);
+            gain.gain.setValueAtTime(0.2, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+            osc.start(t);
+            osc.stop(t + 0.3);
+        }
+    }
+
+    function resizeCanvas() {
+        const container = document.getElementById('canvas-wrapper');
+        const cw = container.clientWidth;
+        const ch = container.clientHeight;
+        const aspect = 3/4; 
+        let w = cw;
+        let h = cw / aspect;
+        if (h > ch) { h = ch; w = h * aspect; }
+        w = Math.min(w, 600);
+        h = w / aspect;
+
+        canvas.width = w;
+        canvas.height = h;
+
+        RADIUS = (w / (COLS + 0.5)) / 2;
+        COL_WIDTH = RADIUS * 2;
+        ROW_HEIGHT = RADIUS * Math.sqrt(3);
+
+        if(state.status === 'START') initGrid();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function getGridX(r, c) {
+        let offset = (r % 2 === 0) ? RADIUS : RADIUS * 2;
+        return offset + c * COL_WIDTH;
+    }
+    
+    function getGridY(r) {
+        return RADIUS + r * ROW_HEIGHT + state.shiftOffset;
+    }
+
+    function initGrid() {
+        state.grid = [];
+        let rows = 4; // Start with 4 rows of ions
+        for (let r = 0; r < 20; r++) { // Max 20 rows internally
+            let row = [];
+            let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+            for (let c = 0; c < colsInRow; c++) {
+                if (r < rows) {
+                    let randIon = ION_BANK[Math.floor(Math.random() * ION_BANK.length)];
+                    row.push({ ...randIon });
+                } else {
+                    row.push(null);
+                }
+            }
+            state.grid.push(row);
+        }
+    }
+
+    function loadNextProjectile() {
+        if (!state.nextProjectile) {
+            state.nextProjectile = { ...ION_BANK[Math.floor(Math.random() * ION_BANK.length)] };
+        }
+        state.projectile = {
+            ...state.nextProjectile,
+            x: canvas.width / 2,
+            y: canvas.height - RADIUS * 1.5,
+            moving: false,
+            vx: 0, vy: 0
+        };
+        state.nextProjectile = { ...ION_BANK[Math.floor(Math.random() * ION_BANK.length)] };
+    }
+
+    function shoot() {
+        if (state.status !== 'PLAYING' || state.projectile.moving) return;
+        initAudio();
+        
+        let speed = RADIUS * 0.8;
+        state.projectile.vx = Math.cos(state.aimAngle) * speed;
+        state.projectile.vy = Math.sin(state.aimAngle) * speed;
+        state.projectile.moving = true;
+        
+        state.shots++;
+        state.shotsSinceShift++;
+        playSound('shoot');
+    }
+
+    function getNeighbors(r, c) {
+        let nbrs = [];
+        let isEven = (r % 2 === 0);
+        let directions = isEven ? 
+            [[-1,-1], [-1,0], [0,-1], [0,1], [1,-1], [1,0]] : 
+            [[-1,0], [-1,1], [0,-1], [0,1], [1,0], [1,1]];
+
+        for (let d of directions) {
+            let nr = r + d[0];
+            let nc = c + d[1];
+            if (nr >= 0 && nr < state.grid.length) {
+                let colsInRow = (nr % 2 === 0) ? COLS : COLS - 1;
+                if (nc >= 0 && nc < colsInRow) {
+                    nbrs.push({r: nr, c: nc});
+                }
+            }
+        }
+        return nbrs;
+    }
+
+    function checkCollision() {
+        let p = state.projectile;
+        for (let r = 0; r < state.grid.length; r++) {
+            let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+            for (let c = 0; c < colsInRow; c++) {
+                if (state.grid[r][c]) {
+                    let gx = getGridX(r, c);
+                    let gy = getGridY(r);
+                    let dx = p.x - gx;
+                    let dy = p.y - gy;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < RADIUS * 1.8) return true; // Slightly less than 2*RADIUS for overlap
+                }
+            }
+        }
+        return p.y <= state.shiftOffset + RADIUS; // Hit ceiling
+    }
+
+    function snapToGrid(px, py) {
+        let minDist = Infinity;
+        let bestR = -1;
+        let bestC = -1;
+        
+        for (let r = 0; r < state.grid.length; r++) {
+            let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+            for (let c = 0; c < colsInRow; c++) {
+                if (!state.grid[r][c]) {
+                    // Check if attached to ceiling or another bubble
+                    let isAttached = (r === 0);
+                    if (!isAttached) {
+                        let nbrs = getNeighbors(r, c);
+                        for(let n of nbrs) {
+                            if (state.grid[n.r][n.c]) { isAttached = true; break; }
+                        }
+                    }
+                    if (isAttached) {
+                        let cx = getGridX(r, c);
+                        let cy = getGridY(r);
+                        let d = Math.sqrt((px-cx)**2 + (py-cy)**2);
+                        if (d < minDist) { minDist = d; bestR = r; bestC = c; }
+                    }
+                }
+            }
+        }
+        return {r: bestR, c: bestC};
+    }
+
+    function getComponent(startR, startC, id) {
+        let comp = [];
+        let visited = new Set();
+        let q = [{r: startR, c: startC}];
+        
+        while (q.length > 0) {
+            let curr = q.shift();
+            let key = curr.r + ',' + curr.c;
+            if (visited.has(key)) continue;
+            visited.add(key);
+            comp.push(curr);
+            
+            let nbrs = getNeighbors(curr.r, curr.c);
+            for (let n of nbrs) {
+                let nIon = state.grid[n.r][n.c];
+                if (nIon && nIon.id === id && !visited.has(n.r + ',' + n.c)) {
+                    q.push(n);
+                }
+            }
+        }
+        return comp;
+    }
+
+    function selectExact(startR, startC, id1, req1, id2, req2) {
+        let list = [];
+        let visited = new Set();
+        let q = [{r: startR, c: startC}];
+        let count1 = 0, count2 = 0;
+        
+        while(q.length > 0 && (count1 < req1 || count2 < req2)) {
+            let curr = q.shift();
+            let key = curr.r + ',' + curr.c;
+            if (visited.has(key)) continue;
+            visited.add(key);
+            
+            let ion = state.grid[curr.r][curr.c];
+            if (!ion) continue;
+            
+            if (ion.id === id1 && count1 < req1) { list.push(curr); count1++; }
+            else if (ion.id === id2 && count2 < req2) { list.push(curr); count2++; }
+            else if (ion.id !== id1 && ion.id !== id2) { continue; }
+            
+            let nbrs = getNeighbors(curr.r, curr.c);
+            for(let n of nbrs) q.push(n);
+        }
+        return list;
+    }
+
+    function toSubscript(num) {
+        return num.toString().split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[c] || c).join('');
+    }
+
+    function generateFormula(cation, anion, catCount, anCount) {
+        let catStr = cation.symbol;
+        if (catCount > 1) {
+            catStr = cation.poly ? `(${catStr})${toSubscript(catCount)}` : `${catStr}${toSubscript(catCount)}`;
+        }
+        let anStr = anion.symbol;
+        if (anCount > 1) {
+            anStr = anion.poly ? `(${anStr})${toSubscript(anCount)}` : `${anStr}${toSubscript(anCount)}`;
+        }
+        return catStr + anStr;
+    }
+
+    function evaluateCompound(startR, startC) {
+        let placedIon = state.grid[startR][startC];
+        if (!placedIon) return null;
+
+        let comp = getComponent(startR, startC, placedIon.id);
+        let oppTypes = {};
+        
+        for (let cell of comp) {
+            let nbrs = getNeighbors(cell.r, cell.c);
+            for (let n of nbrs) {
+                let nIon = state.grid[n.r][n.c];
+                if (nIon && Math.sign(nIon.charge) !== Math.sign(placedIon.charge)) {
+                    if (!oppTypes[nIon.id]) oppTypes[nIon.id] = 0;
+                    oppTypes[nIon.id]++;
+                }
+            }
+        }
+        
+        for (let oppId in oppTypes) {
+            let oppIonDef = ION_BANK.find(i => i.id === oppId);
+            let q1 = Math.abs(placedIon.charge);
+            let q2 = Math.abs(oppIonDef.charge);
+            let gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            let factor = gcd(q1, q2);
+            let reqPlaced = q2 / factor;
+            let reqOpp = q1 / factor;
+            
+            let oppComp = [];
+            for (let cell of comp) {
+                let nbrs = getNeighbors(cell.r, cell.c);
+                for (let n of nbrs) {
+                    let nIon = state.grid[n.r][n.c];
+                    if (nIon && nIon.id === oppId && !oppComp.find(x => x.r===n.r && x.c===n.c)) {
+                        let fullOpp = getComponent(n.r, n.c, oppId);
+                        fullOpp.forEach(foc => {
+                            if (!oppComp.find(x => x.r===foc.r && x.c===foc.c)) oppComp.push(foc);
+                        });
+                    }
+                }
+            }
+            
+            if (comp.length >= reqPlaced && oppComp.length >= reqOpp) {
+                let popList = selectExact(startR, startC, placedIon.id, reqPlaced, oppId, reqOpp);
+                let cation = placedIon.charge > 0 ? placedIon : oppIonDef;
+                let anion = placedIon.charge < 0 ? placedIon : oppIonDef;
+                let reqCat = placedIon.charge > 0 ? reqPlaced : reqOpp;
+                let reqAn = placedIon.charge < 0 ? reqPlaced : reqOpp;
+                
+                return {
+                    popList: popList,
+                    formula: generateFormula(cation, anion, reqCat, reqAn),
+                    name: cation.name + ' ' + anion.name.toLowerCase()
+                };
+            }
+        }
+        return null;
+    }
+
+    function dropDisconnected() {
+        let connected = new Set();
+        let q = [];
+        
+        for (let c = 0; c < COLS; c++) {
+            if (state.grid[0][c]) {
+                q.push({r: 0, c: c});
+                connected.add('0,' + c);
+            }
+        }
+        
+        while (q.length > 0) {
+            let curr = q.shift();
+            let nbrs = getNeighbors(curr.r, curr.c);
+            for (let n of nbrs) {
+                let key = n.r + ',' + n.c;
+                if (state.grid[n.r][n.c] && !connected.has(key)) {
+                    connected.add(key);
+                    q.push(n);
+                }
+            }
+        }
+        
+        let dropped = 0;
+        for (let r = 0; r < state.grid.length; r++) {
+            let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+            for (let c = 0; c < colsInRow; c++) {
+                if (state.grid[r][c] && !connected.has(r + ',' + c)) {
+                    createParticles(getGridX(r,c), getGridY(r), state.grid[r][c].color, 3);
+                    state.grid[r][c] = null;
+                    dropped++;
+                }
+            }
+        }
+        if (dropped > 0) state.score += dropped * 5;
+    }
+
+    function update() {
+        if (state.status !== 'PLAYING') return;
+
+        // Timer logic
+        let now = Date.now();
+        if (now - state.lastTickTime >= 1000) {
+            state.timer--;
+            state.lastTickTime = now;
+            let timerEl = document.getElementById('timer-display');
+            timerEl.innerText = `${state.timer}s`;
+            
+            // Turn red in the final minute
+            if (state.timer <= 60) timerEl.style.color = '#e94560'; 
+            else timerEl.style.color = 'var(--success-color)';
+
+            if (state.timer <= 0) {
+                gameOver();
+                return;
+            }
+        }
+
+        // Controls
+        if (state.aimingLeft) state.aimAngle = Math.max(-Math.PI + 0.1, state.aimAngle - 0.05);
+        if (state.aimingRight) state.aimAngle = Math.min(-0.1, state.aimAngle + 0.05);
+
+        // Projectile Movement
+        if (state.projectile && state.projectile.moving) {
+            state.projectile.x += state.projectile.vx;
+            state.projectile.y += state.projectile.vy;
+
+            // Bounce off walls
+            if (state.projectile.x <= RADIUS || state.projectile.x >= canvas.width - RADIUS) {
+                state.projectile.vx *= -1;
+                state.projectile.x = Math.max(RADIUS, Math.min(canvas.width - RADIUS, state.projectile.x));
+            }
+
+            if (checkCollision()) {
+                state.projectile.moving = false;
+                let snap = snapToGrid(state.projectile.x, state.projectile.y);
+                
+                state.grid[snap.r][snap.c] = { ...state.projectile };
+                
+                let reaction = evaluateCompound(snap.r, snap.c);
+                if (reaction) {
+                    playSound('pop');
+                    logAnalytics('COMPOUND', `Formed ${reaction.formula} (${reaction.name})`);
+                    if (!state.compounds[reaction.formula]) state.compounds[reaction.formula] = { name: reaction.name, count: 0 };
+                    state.compounds[reaction.formula].count++;
+                    
+                    state.score += reaction.popList.length * 10;
+                    
+                    let cx = 0, cy = 0;
+                    reaction.popList.forEach(cell => {
+                        let px = getGridX(cell.r, cell.c);
+                        let py = getGridY(cell.r);
+                        cx += px; cy += py;
+                        createParticles(px, py, state.grid[cell.r][cell.c].color, 8);
+                        state.grid[cell.r][cell.c] = null;
+                    });
+                    
+                    state.floatingTexts.push({
+                        text: reaction.formula, x: cx / reaction.popList.length, y: cy / reaction.popList.length,
+                        alpha: 1.0, life: 60
+                    });
+
+                    dropDisconnected();
+                } else {
+                    logAnalytics('SHOT', `Placed ${state.projectile.symbol}`);
+                }
+
+                // Dynamic Shift Threshold: decreases from 6 down to 2 as time runs out
+                let currentShiftThreshold = Math.max(2, Math.floor(2 + (4 * (state.timer / state.maxTime))));
+
+                // Grid shift down logic
+                if (state.shotsSinceShift >= currentShiftThreshold) {
+                    state.shotsSinceShift = 0;
+                    state.grid.unshift(new Array(COLS).fill(null));
+                    state.grid.pop();
+                    for(let c=0; c<COLS; c++) {
+                        state.grid[0][c] = { ...ION_BANK[Math.floor(Math.random() * ION_BANK.length)] };
+                    }
+                }
+
+                // Check unified loss condition against Danger Line
+                let dangerY = canvas.height - RADIUS * 5;
+                for (let r = 0; r < state.grid.length; r++) {
+                    let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+                    for (let c = 0; c < colsInRow; c++) {
+                        // If a bubble exists and its bottom edge crosses the danger line
+                        if (state.grid[r][c] && (getGridY(r) + RADIUS > dangerY)) {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+
+                loadNextProjectile();
+                document.getElementById('score-display').innerText = state.score;
+            }
+        }
+
+        // Update Particles & Text
+        state.particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.life--; });
+        state.particles = state.particles.filter(p => p.life > 0);
+        
+        state.floatingTexts.forEach(t => { t.y -= 1; t.alpha -= 0.015; t.life--; });
+        state.floatingTexts = state.floatingTexts.filter(t => t.life > 0);
+
+        state.beakerBobBlinkTimer++;
+    }
+
+    function createParticles(x, y, color, count) {
+        for(let i=0; i<count; i++) {
+            state.particles.push({
+                x: x, y: y, color: color,
+                vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8,
+                life: 20 + Math.random() * 20
+            });
+        }
+    }
+
+    function drawIon(x, y, radius, color, symbol, chargeDisp, poly) {
+        ctx.save();
+        // Bubble visual
+        let grad = ctx.createRadialGradient(x - radius*0.3, y - radius*0.3, radius*0.1, x, y, radius);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.3, color);
+        grad.addColorStop(1, '#000000');
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI*2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#fff';
+        ctx.stroke();
+
+        // High contrast Retro Text
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        let fontSize = radius * 0.8;
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        
+        if (poly) {
+            ctx.font = `bold ${fontSize*0.7}px sans-serif`;
+            ctx.strokeText(symbol, x - radius*0.1, y);
+            ctx.fillText(symbol, x - radius*0.1, y);
+        } else {
+            ctx.strokeText(symbol, x, y);
+            ctx.fillText(symbol, x, y);
+        }
+
+        ctx.font = `bold ${fontSize*0.6}px sans-serif`;
+        ctx.strokeText(chargeDisp, x + radius*0.5, y - radius*0.4);
+        ctx.fillText(chargeDisp, x + radius*0.5, y - radius*0.4);
+        
+        ctx.restore();
+    }
+
+    function drawBeakerBob(bx, by) {
+        ctx.save();
+        ctx.translate(bx, by);
+        
+        // Flask Body
+        ctx.beginPath();
+        ctx.moveTo(-15, -40);
+        ctx.lineTo(15, -40);
+        ctx.lineTo(15, -20);
+        ctx.lineTo(35, 20);
+        ctx.arc(0, 20, 35, 0, Math.PI);
+        ctx.lineTo(-15, -20);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Fluid (Color of next ion)
+        let fColor = state.nextProjectile ? state.nextProjectile.color : '#fff';
+        ctx.beginPath();
+        ctx.moveTo(10, -10);
+        ctx.lineTo(32, 20);
+        ctx.arc(0, 20, 32, 0, Math.PI);
+        ctx.lineTo(-10, -10);
+        ctx.closePath();
+        ctx.fillStyle = fColor;
+        ctx.fill();
+
+        // Eyes (Blinking)
+        ctx.fillStyle = '#000';
+        if (state.beakerBobBlinkTimer % 200 > 10) {
+            ctx.beginPath(); ctx.arc(-10, 15, 3, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(10, 15, 3, 0, Math.PI*2); ctx.fill();
+        } else {
+            ctx.fillRect(-12, 14, 4, 2);
+            ctx.fillRect(8, 14, 4, 2);
+        }
+        
+        // Small next bubble inside
+        if (state.nextProjectile) {
+            drawIon(0, 5, RADIUS * 0.5, state.nextProjectile.color, state.nextProjectile.symbol, state.nextProjectile.chargeDisp, state.nextProjectile.poly);
+        }
+
+        ctx.restore();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Danger Line
+        let dangerY = canvas.height - RADIUS * 5;
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(0, dangerY);
+        ctx.lineTo(canvas.width, dangerY);
+        ctx.strokeStyle = 'rgba(233, 69, 96, 0.6)'; // Subtle red line
+        ctx.lineWidth = 3;
+        ctx.setLineDash([15, 10]);
+        ctx.stroke();
+        
+        ctx.fillStyle = 'rgba(233, 69, 96, 0.8)';
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText('DANGER', canvas.width - 10, dangerY - 5);
+        ctx.restore();
+
+        // Draw Grid Elements
+        for (let r = 0; r < state.grid.length; r++) {
+            let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+            for (let c = 0; c < colsInRow; c++) {
+                let ion = state.grid[r][c];
+                if (ion) {
+                    drawIon(getGridX(r,c), getGridY(r), RADIUS, ion.color, ion.symbol, ion.chargeDisp, ion.poly);
+                }
+            }
+        }
+
+        // Draw Particles
+        state.particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.life * 0.2, 0, Math.PI*2);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+        });
+
+        // Draw Floating Text
+        state.floatingTexts.forEach(t => {
+            ctx.save();
+            ctx.globalAlpha = t.alpha;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 4;
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+            ctx.strokeText(t.text, t.x, t.y);
+            ctx.fillText(t.text, t.x, t.y);
+            ctx.restore();
+        });
+
+        // Draw Shooter Base & Aim
+        let sx = canvas.width / 2;
+        let sy = canvas.height - RADIUS * 1.5;
+
+        // Dotted aim line (Trajectory prediction)
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        
+        let rx = sx;
+        let ry = sy;
+        let rvx = Math.cos(state.aimAngle) * (RADIUS * 0.4);
+        let rvy = Math.sin(state.aimAngle) * (RADIUS * 0.4);
+        let hit = false;
+        let points = [];
+        let steps = 0;
+        
+        // Simulate bubble path
+        while (!hit && steps < 1000) {
+            rx += rvx;
+            ry += rvy;
+            steps++;
+
+            // Wall bounce prediction
+            if (rx <= RADIUS || rx >= canvas.width - RADIUS) {
+                rvx *= -1;
+                rx = Math.max(RADIUS, Math.min(canvas.width - RADIUS, rx));
+                points.push({x: rx, y: ry}); // Add a point at the wall bounce
+            }
+
+            // Ceiling collision prediction
+            if (ry <= state.shiftOffset + RADIUS) {
+                hit = true;
+                points.push({x: rx, y: ry});
+                break;
+            }
+
+            // Bubble collision prediction (Check nearby rows for efficiency)
+            let approxRow = Math.floor((ry - RADIUS - state.shiftOffset) / ROW_HEIGHT);
+            let startR = Math.max(0, approxRow - 2);
+            let endR = Math.min(state.grid.length - 1, approxRow + 2);
+            
+            for (let r = startR; r <= endR; r++) {
+                let colsInRow = r % 2 === 0 ? COLS : COLS - 1;
+                for (let c = 0; c < colsInRow; c++) {
+                    if (state.grid[r][c]) {
+                        let gx = getGridX(r, c);
+                        let gy = getGridY(r);
+                        let dist = Math.sqrt((rx - gx)**2 + (ry - gy)**2);
+                        if (dist < RADIUS * 1.8) { // Same hit radius as actual projectile
+                            hit = true;
+                            points.push({x: rx, y: ry});
+                            break;
+                        }
+                    }
+                }
+                if (hit) break;
+            }
+        }
+
+        // Draw the predicted path segments
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.lineWidth = 3;
+        for (let p of points) {
+            ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Projectile
+        if (state.projectile) {
+            drawIon(state.projectile.x, state.projectile.y, RADIUS, state.projectile.color, state.projectile.symbol, state.projectile.chargeDisp, state.projectile.poly);
+        }
+
+        // Mascot
+        drawBeakerBob(sx - 70, canvas.height - 30);
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function startGame() {
+        initAudio();
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-over-screen').style.display = 'none';
+        
+        state.score = 0;
+        state.shots = 0;
+        state.shotsSinceShift = 0;
+        state.timer = state.maxTime;
+        state.lastTickTime = Date.now();
+        state.compounds = {}; 
+        
+        // Reset timer UI
+        let timerEl = document.getElementById('timer-display');
+        timerEl.innerText = `${state.timer}s`;
+        timerEl.style.color = 'var(--success-color)';
+        
+        document.getElementById('score-display').innerText = state.score;
+        logContainer.innerHTML = ''; 
+        logAnalytics('START', 'Game Started');
+        
+        initGrid();
+        loadNextProjectile();
+        state.status = 'PLAYING';
+    }
+
+    function gameOver() {
+        state.status = 'GAMEOVER';
+        playSound('error');
+        if(bgmTimeout) { clearTimeout(bgmTimeout); bgmTimeout = null; }
+        
+        logAnalytics('GAMEOVER', `Final Score: ${state.score}`);
+        document.getElementById('final-score').innerText = state.score;
+        
+        let overText = state.timer <= 0 ? "Time's Up!" : "Reaction Unstable!";
+        document.querySelector('#game-over-screen h2').innerText = overText;
+        
+        let summaryDiv = document.getElementById('compound-summary');
+        let html = '<h3 style="margin-top:0; border-bottom:1px solid #fff; padding-bottom:5px;">Compounds Formed:</h3>';
+        let keys = Object.keys(state.compounds);
+        if(keys.length === 0) {
+            html += '<p style="margin-top:10px; font-style:italic;">No neutral compounds formed.</p>';
+        } else {
+            html += '<ul style="list-style:none; padding:0; margin-top:10px;">';
+            keys.forEach(f => {
+                let d = state.compounds[f];
+                html += `<li style="margin-bottom:5px;"><strong>${f}</strong> (${d.name}) <span style="float:right; color:var(--success-color);">x${d.count}</span></li>`;
+            });
+            html += '</ul>';
+        }
+        summaryDiv.innerHTML = html;
+        document.getElementById('game-over-screen').style.display = 'block';
+    }
+
+    function logAnalytics(action, detail) {
+        let time = Math.floor((Date.now() - state.startTime) / 1000);
+        if(time < 0 || isNaN(time)) time = 0;
+        let icon = '▶';
+        if(action==='SHOT') icon='🏹';
+        if(action==='COMPOUND') icon='✅';
+        if(action==='GAMEOVER') icon='❌';
+        
+        let entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `<span class="log-time">[t=${time}s]</span> ${icon} <strong>${action}:</strong> ${detail}`;
+        logContainer.appendChild(entry);
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateAim(e) {
+        if (!state.pointerDown) return;
+        let rect = canvas.getBoundingClientRect();
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        let px = clientX - rect.left;
+        let py = clientY - rect.top;
+        
+        let sx = canvas.width / 2;
+        let sy = canvas.height - RADIUS * 1.5;
+        let angle = Math.atan2(py - sy, px - sx);
+        if (angle > -0.1 && angle < Math.PI / 2) angle = -0.1;
+        if (angle < -Math.PI + 0.1 || angle > Math.PI / 2) angle = -Math.PI + 0.1;
+        state.aimAngle = angle;
+    }
+
+    // Canvas pointing
+    canvas.addEventListener('mousedown', e => { state.pointerDown = true; updateAim(e); });
+    canvas.addEventListener('mousemove', e => { if(state.pointerDown) updateAim(e); });
+    canvas.addEventListener('mouseup', e => { if(state.pointerDown) { updateAim(e); shoot(); state.pointerDown = false;} });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); state.pointerDown = true; updateAim(e); }, {passive: false});
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); if(state.pointerDown) updateAim(e); }, {passive: false});
+    canvas.addEventListener('touchend', e => { e.preventDefault(); if(state.pointerDown) { shoot(); state.pointerDown = false; } }, {passive: false});
+
+    // Keyboard
+    window.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') state.aimingLeft = true;
+        if (e.key === 'ArrowRight') state.aimingRight = true;
+        if (e.key === ' ' || e.key === 'ArrowUp') shoot();
+    });
+    window.addEventListener('keyup', e => {
+        if (e.key === 'ArrowLeft') state.aimingLeft = false;
+        if (e.key === 'ArrowRight') state.aimingRight = false;
+    });
+
+    // Touch Buttons
+    const bindBtn = (id, startAct, stopAct) => {
+        let btn = document.getElementById(id);
+        btn.addEventListener('mousedown', startAct);
+        btn.addEventListener('touchstart', (e)=>{e.preventDefault(); startAct();}, {passive: false});
+        if(stopAct) {
+            window.addEventListener('mouseup', stopAct);
+            btn.addEventListener('touchend', (e)=>{e.preventDefault(); stopAct();}, {passive: false});
+        }
+    };
+    bindBtn('btn-left', () => state.aimingLeft = true, () => state.aimingLeft = false);
+    bindBtn('btn-right', () => state.aimingRight = true, () => state.aimingRight = false);
+    bindBtn('btn-shoot', shoot, null);
+
+    // UI Buttons
+    document.getElementById('btn-start').addEventListener('click', startGame);
+    document.getElementById('btn-restart').addEventListener('click', startGame);
+    document.getElementById('toggle-analytics').addEventListener('click', () => document.getElementById('analytics-panel').classList.remove('collapsed'));
+    document.getElementById('close-analytics').addEventListener('click', () => document.getElementById('analytics-panel').classList.add('collapsed'));
+    document.getElementById('clear-log').addEventListener('click', () => logContainer.innerHTML='');
+    document.getElementById('btn-audio').addEventListener('click', (e) => {
+        state.settings.bgm = !state.settings.bgm;
+        e.target.innerText = state.settings.bgm ? '🔊 Music: ON' : '🔇 Music: OFF';
+        if(state.settings.bgm) { initAudio(); scheduleBGM(); }
+        else if(audioCtx) { audioCtx.suspend(); audioCtx = null; clearTimeout(bgmTimeout); bgmTimeout = null;}
+    });
+
+    // Start Engine
+    window.onload = function() {
+        resizeCanvas();
+        gameLoop();
+    };
+</script>
+</body>
+</html>
