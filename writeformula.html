@@ -1,878 +1,800 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chemistry Formula Quest</title>
-    <style>
-        :root {
-            --primary: #0d9488; /* Turquoise/Teal */
-            --primary-light: #f0fdfa;
-            --success: #16a34a;
-            --error: #dc2626;
-            --bg-turquoise: #2dd4bf; /* Main home background */
-            --bg-game: #f8fafc;
-            --card: #ffffff;
-            --border: #e2e8f0;
-            --hint-bg: #fef9c3;
-            --hint-text: #854d0e;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#069494">
+<title>Formula Master Quest · Science is Khool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Science is Khool · Tropical Punch — "Arcade Punch" game skin */
+:root {
+  --orange: #FF8243; --pink: #FFC0CB; --yellow: #FCE883; --teal: #069494; --teal-ink: #057A7A;
+  --orange-tint: #FFE6DA; --pink-tint: #FFEEF1; --yellow-tint: #FEF8D9; --teal-tint: #DDF2F2;
+  --ink: #1F2A2E; --muted: #56656A; --line: #E4E8E9; --bg: #FFFFFF;
+  --good: #1E9E62; --good-tint: #D8F3E4; --bad: #E2463A;
+  --b: 3px solid var(--ink);
+  --font: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body { font: 16px/1.5 var(--font); min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.sub { font-size: .65em; position: relative; bottom: -.25em; line-height: 0; }
+.sup { font-size: .65em; position: relative; top: -.55em; line-height: 0; margin-left: .03em; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
 
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-            color: #1e293b;
-            transition: background-color 0.3s ease;
-        }
+.wrap { width: 100%; max-width: 1040px; margin: 0 auto; padding: 16px; flex: 1; display: flex; flex-direction: column; }
+.card { background: #fff; border: var(--b); border-radius: 22px; box-shadow: 6px 6px 0 var(--ink); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: var(--b); border-radius: 16px; padding: 14px 18px; font-weight: 800; font-size: 1.1rem; background: var(--orange); color: var(--ink); box-shadow: 0 5px 0 var(--ink); transition: transform .08s, box-shadow .08s; user-select: none; -webkit-user-select: none; }
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.big { width: 100%; font-size: 1.12rem; text-transform: uppercase; letter-spacing: .03em; padding: 15px; }
+.btn.alt { background: #fff; } .btn.teal { background: var(--teal); color: #fff; } .btn.small { padding: 8px 14px; font-size: .95rem; box-shadow: 0 3px 0 var(--ink); }
+.pill { display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; border: 2px solid var(--ink); border-radius: 99px; padding: 2px 10px; background: #fff; color: var(--ink); }
+.icon-btn { width: 42px; height: 42px; border-radius: 12px; border: var(--b); background: #fff; display: grid; place-items: center; box-shadow: 0 3px 0 var(--ink); padding: 0; flex: none; }
+.icon-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.icon-btn svg { width: 20px; height: 20px; } .icon-btn.off { opacity: .45; }
 
-        body.home-active {
-            background-color: var(--bg-turquoise);
-        }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 2px solid var(--line); background: #fff; }
+.topbar .brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-decoration: none; color: var(--ink); }
+.topbar .brand img { width: 38px; height: 38px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--yellow); object-fit: cover; flex: none; }
+.topbar .brand > span { min-width: 0; }
+.topbar .brand b { font-weight: 800; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.topbar .brand small { display: block; font-size: .72rem; color: var(--muted); font-weight: 600; line-height: 1.2; }
 
-        body.game-active {
-            background-color: var(--bg-game);
-        }
+/* start */
+.start { display: grid; gap: 22px; grid-template-columns: 1fr; align-items: start; margin: auto 0; padding-block: 8px 20px; }
+.hero { background: var(--teal); color: #fff; padding: 22px 22px 0; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.hero h1 { margin: 4px 0 0; font-size: clamp(1.9rem, 6.5vw, 2.7rem); line-height: 1.08; font-weight: 800; }
+.hero h1 em { font-style: normal; background: var(--yellow); color: var(--ink); border: var(--b); border-radius: 14px; padding: 0 10px; display: inline-block; transform: rotate(-2deg); }
+.hero p { margin: 0; font-weight: 600; max-width: 42ch; }
+.hero ol { margin: 0; padding-left: 22px; font-weight: 600; font-size: .95rem; }
+.duo { display: flex; justify-content: space-around; gap: 10px; margin-top: 4px; }
+.duo img { width: 46%; max-width: 170px; display: block; }
+.form { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.form h2 { margin: 0; font-size: 1.25rem; font-weight: 800; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fields .full { grid-column: 1 / -1; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-weight: 700; font-size: .9rem; }
+label.f input, label.f select { font-size: 16px; padding: 12px; border: 2.5px solid var(--ink); border-radius: 12px; background: #fff; width: 100%; min-width: 0; }
+label.f input:focus, label.f select:focus { outline: 3px solid var(--yellow); outline-offset: 1px; }
+.form-err { color: var(--bad); font-weight: 700; font-size: .9rem; min-height: 1.2em; margin: -4px 0 0; }
+.modes { display: grid; gap: 12px; }
+.mode { text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px 16px; }
+.mode b { font-size: 1.15rem; } .mode span { font-weight: 600; font-size: .9rem; } .mode small { font-weight: 700; font-size: .8rem; opacity: .85; }
+@media (min-width: 760px) { .start { grid-template-columns: 1.1fr 1fr; gap: 28px; } }
 
-        #app {
-            width: 100%;
-            max-width: 700px;
-            padding: 20px;
-            position: relative;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+/* play */
+.play { display: grid; grid-template-columns: 1fr; border: var(--b); border-radius: 22px; overflow: hidden; box-shadow: 6px 6px 0 var(--ink); background: #fff; margin-block: 4px 16px; }
+.hud { background: var(--teal); color: #fff; padding: 14px; display: flex; flex-direction: column; gap: 10px; border-bottom: var(--b); }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.score { font-size: 1.9rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.score small { display: block; font-size: .66rem; letter-spacing: .1em; text-transform: uppercase; opacity: .9; margin-bottom: 2px; }
+.badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.lvl { background: var(--yellow); color: var(--ink); font-weight: 800; border: var(--b); border-radius: 10px; padding: 2px 10px; transform: rotate(-3deg); box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.combo { background: var(--orange); color: var(--ink); font-weight: 800; border: var(--b); border-radius: 10px; padding: 2px 8px; transform: rotate(3deg); box-shadow: 2px 2px 0 var(--ink); white-space: nowrap; font-size: .9rem; }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 24px; height: 9px; border-radius: 99px; background: rgba(255,255,255,.35); border: 2px solid var(--ink); }
+.dots i.now { background: #fff; } .dots i.ok { background: var(--yellow); } .dots i.no { background: var(--orange); }
+.qtime { flex: 1; height: 12px; border: 2px solid var(--ink); border-radius: 99px; background: #fff; overflow: hidden; }
+.qtime i { display: block; height: 100%; width: 100%; background: var(--orange); } .qtime i.warn { background: var(--bad); }
+.secs { font-weight: 800; font-size: 1rem; font-variant-numeric: tabular-nums; min-width: 2.6em; text-align: right; }
+.cmp { background: #fff; color: var(--ink); border: var(--b); border-radius: 16px; padding: 12px; text-align: center; }
+.cmp small { display: block; font-weight: 700; color: var(--muted); font-size: .85rem; }
+.cmp b { display: block; font-size: clamp(1.5rem, 6vw, 2rem); line-height: 1.15; font-weight: 800; }
+.cmp .els { display: block; font-weight: 700; color: var(--teal-ink); }
+.steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.steps span { font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; border: 2px solid var(--ink); background: rgba(255,255,255,.35); color: var(--ink); }
+.steps span.now { background: #fff; } .steps span.ok { background: var(--yellow); } .steps span.half { background: var(--pink); } .steps span.no { background: var(--orange); }
+.notes { background: rgba(255,255,255,.92); color: var(--ink); border: 2.5px solid var(--ink); border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; font-size: .92rem; font-weight: 600; }
+.notes:empty { display: none; }
+.notes b { font-weight: 800; color: var(--teal-ink); }
 
-        .card {
-            background: var(--card);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-            padding: 2.5rem;
-            margin-top: 2rem;
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 0;
-            overflow: hidden;
-        }
+.controls { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.ask { font-weight: 800; font-size: 1.15rem; margin: 0; text-wrap: balance; }
+.ask small { display: block; font-weight: 600; font-size: .9rem; color: var(--muted); }
+.bonds { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.bond { padding: 0; border: var(--b); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); overflow: hidden; display: flex; flex-direction: column; }
+.bond img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; pointer-events: none; }
+.bond[aria-pressed="true"] { outline: 5px solid var(--yellow); outline-offset: -5px; transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+.el-row { border: 2.5px solid var(--ink); border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: var(--yellow-tint); }
+.el-row:nth-child(even) { background: var(--pink-tint); }
+.el-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-weight: 800; }
+.el-head .sym { font-size: 1.4rem; }
+.el-head small { font-weight: 600; color: var(--muted); }
+.shells { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-weight: 800; font-size: 1.3rem; }
+.shells input { width: 48px; height: 52px; text-align: center; font-size: 1.4rem; font-weight: 800; border: var(--b); border-radius: 12px; background: #fff; }
+.shells input:focus { outline: 3px solid var(--orange); outline-offset: 1px; }
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.tap { font-weight: 800; font-size: 1rem; padding: 9px 14px; border: 2.5px solid var(--ink); border-radius: 12px; background: #fff; box-shadow: 0 3px 0 var(--ink); min-width: 46px; }
+.tap[aria-pressed="true"] { background: var(--yellow); transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.tap.num { font-size: 1.15rem; }
+.lbl { font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ionbox, .fbox { display: flex; justify-content: center; align-items: center; min-height: 60px; border: 3px dashed var(--ink); border-radius: 16px; background: #fff; font-size: 2rem; font-weight: 800; padding: 4px 12px; }
+.fbox .ph { color: #A9B4B7; font-size: 1.1rem; font-weight: 700; }
+.fpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.fpad .k { font-weight: 800; font-size: 1.35rem; padding: 10px 0; border: var(--b); border-radius: 14px; background: #fff; box-shadow: 0 4px 0 var(--ink); min-height: 54px; }
+.fpad .k:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.fpad .k.el { background: var(--teal-tint); } .fpad .k.n { background: var(--yellow-tint); } .fpad .k.del { background: var(--pink-tint); font-size: 1rem; }
+.hint { background: var(--yellow-tint); border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; font-weight: 600; font-size: .95rem; }
+.msg-err { background: var(--orange-tint); border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; font-weight: 700; }
+.reveal { background: var(--orange-tint); border: var(--b); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.reveal h3 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.reveal p { margin: 0; font-weight: 600; }
+.reveal .ans { background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 8px 12px; font-weight: 700; }
+.act-row { display: flex; gap: 10px; } .act-row .btn { flex: 1; }
+.flash { text-align: center; font-weight: 800; font-size: 1.3rem; padding: 16px; border: var(--b); border-radius: 16px; background: var(--good-tint); }
+.flash.big { background: var(--yellow); }
+.quick-ans { position: fixed; left: 50%; top: 38%; translate: -50% -50%; z-index: 60; pointer-events: none; font-weight: 800; font-size: 1.3rem; padding: 12px 20px; border: var(--b); border-radius: 18px; box-shadow: 4px 4px 0 var(--ink); background: var(--orange-tint); text-align: center; animation: qa 1.4s ease-out forwards; }
+.quick-ans.ok { background: var(--good-tint); animation-duration: .8s; }
+@keyframes qa { 0% { opacity: 0; scale: .7; } 15% { opacity: 1; scale: 1.05; } 75% { opacity: 1; scale: 1; } 100% { opacity: 0; } }
+@media (min-width: 760px) {
+  .play { grid-template-columns: .9fr 1.1fr; }
+  .hud { border-bottom: 0; border-right: var(--b); padding: 18px; }
+  .controls { padding: 20px; }
+}
 
-        #home-screen {
-            min-height: 80vh;
-        }
-
-        .title { 
-            text-align: center; 
-            margin-bottom: 0.2rem; 
-            color: var(--primary); 
-            font-size: 2.2rem;
-        }
-
-        .attribution {
-            text-align: center;
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 1.5rem;
-            font-style: italic;
-        }
-        
-        .level-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-top: 1.5rem;
-            flex-grow: 1;
-        }
-
-        .level-card {
-            padding: 1rem;
-            text-align: center;
-            background: #fff;
-            border: 2px solid var(--border);
-            border-radius: 1rem;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 120px;
-        }
-
-        .level-card:hover { 
-            border-color: var(--primary); 
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        .level-card.completed { 
-            border-color: var(--success); 
-            background: #f0fdf4; 
-        }
-
-        .home-footer-decor {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end;
-            margin: 2rem -2.5rem -2.5rem -2.5rem;
-            padding: 2rem 2.5rem;
-            background-color: var(--bg-turquoise);
-            border-top: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .footer-img {
-            width: 160px;
-            height: auto;
-            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
-            transition: transform 0.3s ease;
-        }
-
-        .footer-img:hover {
-            transform: scale(1.05) translateY(-5px);
-        }
-
-        /* Challenge Modal Styling */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        .modal-overlay.show { display: flex; }
-        .challenge-modal {
-            background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-        }
-
-        /* Game UI */
-        .image-selection-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin: 1rem 0;
-        }
-
-        .image-option {
-            border: 3px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: white;
-            text-align: center;
-            padding: 10px;
-        }
-
-        .image-option img {
-            width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .image-option.selected {
-            border-color: var(--primary);
-            background: #f0fdfa;
-        }
-
-        .input-group { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin: 1rem 0; 
-            flex-wrap: wrap; 
-            background: #f1f5f9;
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-
-        .display-box {
-            min-height: 60px;
-            background: #fff;
-            border: 2px dashed var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 10px;
-            position: relative;
-        }
-
-        .chip {
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 600;
-            margin: 4px;
-        }
-
-        .selection-row {
-            display: flex;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-
-        input[type="number"], select {
-            padding: 0.5rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.25rem;
-            text-align: center;
-        }
-
-        .shell-input { width: 45px; }
-
-        button {
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-primary { background: var(--primary); color: white; width: 100%; }
-        .btn-outline { background: transparent; border: 2px solid var(--border); color: #64748b; }
-        .btn-success { background: var(--success); color: white; width: 100%; }
-        
-        .btn-hint { 
-            background: var(--hint-bg); 
-            color: var(--hint-text); 
-            border: 1px solid #fde047; 
-            padding: 0.4rem 0.8rem; 
-            font-size: 0.85rem;
-            margin-bottom: 1rem;
-        }
-
-        .hint-box {
-            background: var(--hint-bg);
-            color: var(--hint-text);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #fde047;
-            display: none;
-        }
-        .hint-box.show { display: block; }
-
-        .feedback {
-            margin-top: 1rem;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            display: none;
-            text-align: center;
-            font-weight: bold;
-        }
-        .feedback.show { display: block; }
-        .feedback.correct { background: #dcfce7; color: #166534; }
-        .feedback.wrong { background: #fee2e2; color: #991b1b; }
-
-        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .badge { background: #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; }
-        .badge-timer { background: #fee2e2; color: #991b1b; }
-        .badge-score { background: #dcfce7; color: #166534; }
-
-        @media (max-width: 600px) {
-            .level-grid { grid-template-columns: repeat(2, 1fr); }
-            .footer-img { width: 110px; }
-            .home-footer-decor { margin: 1.5rem -1.5rem -1.5rem -1.5rem; padding: 1.5rem; }
-            .card { padding: 1.5rem; }
-            .title { font-size: 1.8rem; }
-        }
-    </style>
+/* results */
+.results { display: grid; gap: 18px; grid-template-columns: 1fr; padding-block: 8px 20px; }
+.res-hero { background: var(--teal); color: #fff; padding: 22px; display: flex; gap: 18px; align-items: center; }
+.big-ring { --p: 0; width: 120px; height: 120px; flex: none; border-radius: 50%; border: var(--b); background: conic-gradient(var(--yellow) calc(var(--p) * 1%), #fff 0); display: grid; place-items: center; }
+.big-ring span { width: 88px; height: 88px; border-radius: 50%; background: #fff; color: var(--ink); border: var(--b); display: grid; place-items: center; font-weight: 800; font-size: 1.7rem; }
+.res-hero h2 { margin: 0 0 4px; font-size: 1.6rem; line-height: 1.15; font-weight: 800; } .res-hero p { margin: 0; font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stat { border: var(--b); border-radius: 14px; padding: 8px 10px; box-shadow: 0 4px 0 var(--ink); }
+.stat span { display: block; font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.stat b { font-size: 1.3rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat:nth-child(1) { background: var(--yellow-tint); } .stat:nth-child(2) { background: var(--pink-tint); } .stat:nth-child(3) { background: var(--teal-tint); } .stat:nth-child(4) { background: var(--orange-tint); }
+.panel { padding: 18px; display: flex; flex-direction: column; gap: 12px; } .panel h3 { margin: 0; font-size: 1.15rem; font-weight: 800; }
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: grid; grid-template-columns: 10.5em 1fr 3.2em; gap: 10px; align-items: center; font-weight: 700; font-size: .92rem; }
+.bar { height: 14px; border: 2px solid var(--ink); border-radius: 99px; overflow: hidden; background: #fff; }
+.bar i { display: block; height: 100%; background: var(--teal); } .bar i.low { background: var(--orange); }
+.bar-row .n { text-align: right; font-variant-numeric: tabular-nums; }
+.weak, .review { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.weak li { border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; background: var(--orange-tint); }
+.weak li b { display: block; } .weak li span { font-size: .9rem; } .weak li.good { background: var(--good-tint); }
+.review li { border-bottom: 2px solid var(--line); padding: 6px 0 8px; font-size: .95rem; } .review li:last-child { border-bottom: 0; }
+.review .you { color: var(--bad); font-weight: 700; } .review .key { color: var(--good); font-weight: 800; }
+.send { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-weight: 700; padding: 12px 14px; border: 2.5px solid var(--ink); border-radius: 14px; background: var(--teal-tint); }
+.send.err { background: var(--orange-tint); }
+.res-actions { display: flex; gap: 12px; flex-wrap: wrap; } .res-actions .btn { flex: 1 1 200px; }
+@media (min-width: 760px) { .results { grid-template-columns: 1fr 1fr; align-items: start; } .results .span { grid-column: 1 / -1; } }
+@media (max-width: 480px) { .stats { grid-template-columns: repeat(2, 1fr); } .res-hero { flex-direction: column; text-align: center; } .bar-row { grid-template-columns: 8.6em 1fr 3em; font-size: .85rem; } }
+footer { text-align: center; color: var(--muted); font-size: .82rem; padding: 14px 16px 20px; }
+footer a { color: var(--teal-ink); font-weight: 700; }
+canvas#confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+@media (prefers-reduced-motion: reduce) { .quick-ans { animation: none !important; opacity: 0; } }
+</style>
 </head>
-<body class="home-active">
+<body>
+<header class="topbar">
+  <a class="brand" href="https://scienceiskhool.github.io/scienceiskhool/" target="_blank" rel="noopener">
+    <img src="https://scienceiskhool.github.io/scienceiskhool/assets/img/head.png" alt="" onerror="this.style.visibility='hidden'">
+    <span><b>Formula Master Quest</b><small>Science is Khool · Chemical bonding</small></span>
+  </a>
+  <button class="icon-btn" id="btn-sound" type="button" aria-label="Sound effects" title="Sound effects">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>
+  </button>
+  <button class="icon-btn" id="btn-full" type="button" aria-label="Full screen" title="Full screen" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+  </button>
+</header>
 
-<div id="app">
-    <div id="home-screen" class="card">
-        <h1 class="title">🧪 Formula Master Quest</h1>
-        <div class="attribution">designed by Ms Khoo Xiang Yun</div>
-        <p style="text-align:center; color: #64748b; margin-bottom: 0;">Master bonding through step-by-step analysis.</p>
-        
-        <div class="level-grid" id="level-list">
-            <!-- Questions/Levels appear here -->
-        </div>
-
-        <div class="home-footer-decor">
-            <img src="https://lh3.googleusercontent.com/d/1QWOZgXcOYZXMtmfMFOoMEDR_e3SuMoQ1" class="footer-img" alt="Ionic Blank">
-            <img src="https://lh3.googleusercontent.com/d/1erPk4yIeia1SdiSozLvolWllGA517LvC" class="footer-img" alt="Covalent Blank">
-        </div>
+<main class="wrap">
+  <!-- START -->
+  <section id="scr-start" class="start">
+    <div class="card hero">
+      <span class="pill" style="align-self:flex-start">Chemistry · Bonding &amp; formulae</span>
+      <h1>Formula Master <em>Quest</em></h1>
+      <p>Work out each formula step by step, the way you would in an exam:</p>
+      <ol><li>Ionic or covalent?</li><li>Electronic configurations</li><li>Lose, gain or share electrons</li><li>Ions, or central atom</li><li>Write the formula</li></ol>
+      <div class="duo"><img id="img-duo-i" alt="Two cartoon atoms passing an electron (ionic bonding)"><img id="img-duo-c" alt="Two cartoon atoms sharing electrons (covalent bonding)"></div>
     </div>
+    <form class="card form" id="form-start" novalidate>
+      <h2>Sign in to play</h2>
+      <div class="fields">
+        <label class="f full" for="in-name">Name<input id="in-name" maxlength="60" autocomplete="name" required></label>
+        <label class="f" for="in-cls">Class<select id="in-cls" required><option value="">Choose…</option></select></label>
+        <label class="f" for="in-reg">Register no.<input id="in-reg" inputmode="numeric" pattern="[0-9]*" maxlength="2" required></label>
+      </div>
+      <p class="form-err" id="form-err" role="alert"></p>
+      <div class="modes">
+        <button class="btn mode" type="submit" data-mode="practice"><b>🧪 Step-by-step round</b><span>6 new compounds each time: 3 ionic, 3 covalent.</span><small id="best-practice">Best: 0</small></button>
+        <button class="btn mode teal" type="submit" data-mode="challenge" id="btn-challenge"><b>🏆 60-second Formula Challenge</b><span id="chal-desc">Build as many formulae as you can.</span><small id="best-challenge">Best: 0</small></button>
+      </div>
+    </form>
+  </section>
 
-    <!-- Gameplay Area -->
-    <div id="game-screen" class="card" style="display:none">
-        <div class="progress-header">
-            <button class="btn-outline" id="back-btn" onclick="showHome()">← Back</button>
-            <div id="stats-container" style="display: flex; gap: 8px; align-items: center;">
-                <span id="current-compound-name" style="font-weight:bold; font-size: 1.2rem; color: var(--primary)"></span>
-            </div>
-            <span class="badge" id="step-count">Step 1/5</span>
-        </div>
-
-        <div id="history-area" style="background: #f8fafc; border-radius: 0.5rem; padding: 10px; margin-bottom: 1rem; display: none;">
-            <div id="history-list"></div>
-        </div>
-
-        <div id="step-ui"></div>
-
-        <div id="feedback" class="feedback"></div>
-        <button id="submit-btn" class="btn-primary" style="margin-top:1rem">Check Answer</button>
+  <!-- PLAY -->
+  <section id="scr-play" class="play" hidden>
+    <div class="hud">
+      <div class="row">
+        <div class="score"><small>Points</small><span id="txt-points">0</span></div>
+        <div class="badges"><span class="combo" id="txt-combo" hidden></span><span class="lvl" id="txt-count"></span></div>
+      </div>
+      <div class="row" id="hud-dots"><div class="dots" id="dots"></div><button class="btn small alt" id="btn-hint" type="button">💡 Hint</button></div>
+      <div class="row" id="hud-time" hidden><div class="qtime"><i id="bar-time"></i></div><span class="secs" id="txt-secs">60s</span></div>
+      <div class="cmp" aria-live="polite"><small id="cmp-ask">Write the formula of</small><b id="cmp-name"></b><span class="els" id="cmp-els"></span></div>
+      <div class="steps" id="steps"></div>
+      <div class="notes" id="notes"></div>
     </div>
-</div>
-
-<!-- Modal for Challenge Invitation -->
-<div id="challenge-modal-overlay" class="modal-overlay">
-    <div class="challenge-modal">
-        <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
-        <h2>Course Completed!</h2>
-        <p>You've mastered the basics. Are you ready for the 1-minute <strong>Formula Mastery Challenge</strong>?</p>
-        <button class="btn-success" onclick="startChallenge()">Accept Challenge!</button>
-        <button class="btn-outline" style="width:100%; margin-top: 10px;" onclick="closeChallengeModal()">Maybe Later</button>
+    <div class="controls">
+      <p class="hint" id="hint-box" hidden></p>
+      <div id="stage"></div>
+      <div class="flash" id="flash" hidden></div>
     </div>
-</div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="scr-result" class="results" hidden>
+    <div class="card res-hero span">
+      <div class="big-ring" id="res-ring"><span id="res-pct">0%</span></div>
+      <div><h2 id="res-title"></h2><p id="res-msg"></p></div>
+    </div>
+    <div class="stats span">
+      <div class="stat"><span id="res-l1"></span><b id="res-v1"></b></div>
+      <div class="stat"><span id="res-l2"></span><b id="res-v2"></b></div>
+      <div class="stat"><span>Time</span><b id="res-time">0:00</b></div>
+      <div class="stat"><span>Points</span><b id="res-points">0</b></div>
+    </div>
+    <div class="card panel">
+      <h3>How you did</h3>
+      <div class="bars" id="res-bars"></div>
+      <h3 style="margin-top:6px">What to work on</h3>
+      <ul class="weak" id="res-weak"></ul>
+    </div>
+    <div class="card panel"><h3>Check your mistakes</h3><ul class="review" id="res-review"></ul></div>
+    <div class="send span" id="send" aria-live="polite"><span id="send-msg">Sending your results to Ms Khoo…</span><button class="btn small alt" id="btn-resend" type="button" hidden>Try again</button></div>
+    <div class="res-actions span">
+      <button class="btn big teal" id="btn-home" type="button">Home</button>
+      <button class="btn big" id="btn-again" type="button">Play again ↻</button>
+    </div>
+  </section>
+</main>
+<footer>Designed by Ms Khoo Xiang Yun · <a href="https://scienceiskhool.github.io/scienceiskhool/" target="_blank" rel="noopener">Science is Khool</a></footer>
+<canvas id="confetti" hidden></canvas>
 
 <script>
-    // Core Levels (6 main tutorial steps)
-    const compounds = [
-        { id: 'nacl', name: "Sodium Chloride", type: 'ionic', config: { a: [2,8,1], b: [2,8,7] }, goal: { a: ['lose', 1], b: ['gain', 1] }, ions: { a: 'Na+', b: 'Cl-' }, formula: 'NaCl', symbols: ['Na', 'Cl'] },
-        { id: 'mgf2', name: "Magnesium Fluoride", type: 'ionic', config: { a: [2,8,2], b: [2,7] }, goal: { a: ['lose', 2], b: ['gain', 1] }, ions: { a: 'Mg2+', b: 'F-' }, formula: 'MgF2', symbols: ['Mg', 'F'] },
-        { id: 'al2o3', name: "Aluminium Oxide", type: 'ionic', config: { a: [2,8,3], b: [2,6] }, goal: { a: ['lose', 3], b: ['gain', 2] }, ions: { a: 'Al3+', b: 'O2-' }, formula: 'Al2O3', symbols: ['Al', 'O'] },
-        { id: 'ch4', name: "Methane", type: 'covalent', config: { a: [2,4], b: [1] }, goal: { a: ['needs', 4], b: ['needs', 1] }, center: 'Carbon', formula: 'CH4', symbols: ['C', 'H'] },
-        { id: 'nh3', name: "Ammonia", type: 'covalent', config: { a: [2,5], b: [1] }, goal: { a: ['needs', 3], b: ['needs', 1] }, center: 'Nitrogen', formula: 'NH3', symbols: ['N', 'H'] },
-        { id: 'co2', name: "Carbon Dioxide", type: 'covalent', config: { a: [2,4], b: [2,6] }, goal: { a: ['needs', 4], b: ['needs', 2] }, center: 'Carbon', formula: 'CO2', symbols: ['C', 'O'] }
-    ];
+(function () {
+"use strict";
 
-    // Extended Pool for Challenge Mode (30 compounds)
-    const challengePool = [
-        ...compounds,
-        { name: "Lithium Fluoride", type: 'ionic', formula: 'LiF', symbols: ['Li', 'F'] },
-        { name: "Lithium Chloride", type: 'ionic', formula: 'LiCl', symbols: ['Li', 'Cl'] },
-        { name: "Sodium Fluoride", type: 'ionic', formula: 'NaF', symbols: ['Na', 'F'] },
-        { name: "Sodium Oxide", type: 'ionic', formula: 'Na2O', symbols: ['Na', 'O'] },
-        { name: "Sodium Sulfide", type: 'ionic', formula: 'Na2S', symbols: ['Na', 'S'] },
-        { name: "Potassium Chloride", type: 'ionic', formula: 'KCl', symbols: ['K', 'Cl'] },
-        { name: "Potassium Fluoride", type: 'ionic', formula: 'KF', symbols: ['K', 'F'] },
-        { name: "Potassium Oxide", type: 'ionic', formula: 'K2O', symbols: ['K', 'O'] },
-        { name: "Magnesium Oxide", type: 'ionic', formula: 'MgO', symbols: ['Mg', 'O'] },
-        { name: "Magnesium Chloride", type: 'ionic', formula: 'MgCl2', symbols: ['Mg', 'Cl'] },
-        { name: "Calcium Oxide", type: 'ionic', formula: 'CaO', symbols: ['Ca', 'O'] },
-        { name: "Calcium Chloride", type: 'ionic', formula: 'CaCl2', symbols: ['Ca', 'Cl'] },
-        { name: "Calcium Fluoride", type: 'ionic', formula: 'CaF2', symbols: ['Ca', 'F'] },
-        { name: "Aluminium Chloride", type: 'ionic', formula: 'AlCl3', symbols: ['Al', 'Cl'] },
-        { name: "Aluminium Fluoride", type: 'ionic', formula: 'AlF3', symbols: ['Al', 'F'] },
-        { name: "Beryllium Oxide", type: 'ionic', formula: 'BeO', symbols: ['Be', 'O'] },
-        { name: "Water", type: 'covalent', formula: 'H2O', symbols: ['H', 'O'] },
-        { name: "Hydrogen Chloride", type: 'covalent', formula: 'HCl', symbols: ['H', 'Cl'] },
-        { name: "Hydrogen Sulfide", type: 'covalent', formula: 'H2S', symbols: ['H', 'S'] },
-        { name: "Phosphine (phosphorus and hydrogen)", type: 'covalent', formula: 'PH3', symbols: ['P', 'H'] },
-        { name: "Silicon Tetrachloride", type: 'covalent', formula: 'SiCl4', symbols: ['Si', 'Cl'] },
-        { name: "Silicon Dioxide", type: 'covalent', formula: 'SiO2', symbols: ['Si', 'O'] },
-        { name: "Carbon Tetrachloride", type: 'covalent', formula: 'CCl4', symbols: ['C', 'Cl'] },
-        { name: "Nitrogen Trichloride", type: 'covalent', formula: 'NCl3', symbols: ['N', 'Cl'] }
-    ];
+/* =================== SETTINGS (safe to edit) =================== */
+var SUBMIT_URL = "https://script.google.com/macros/s/AKfycbxCTjRCQzLlWXmmY-5R0p75WCmeFLzC9ZM3gNbGRXpcc_d9qHMXdyCn12B4dHpnrBWe/exec";
+var SHEET_TAB = "Write Formula";            // tab name in your Google Sheet
+var ROUND_IONIC = 3, ROUND_COVALENT = 3;    // compounds per step-by-step round
+var TRIES = 2;                              // tries per step before the answer is shown
+var CHALLENGE_SECONDS = 60;
+var CLASSES = [];
+["S1", "S2", "S3", "S4"].forEach(function (l) { ["Charity", "Courage", "Faith", "Hope", "Humility", "Integrity", "Love", "Respect", "Joy"].forEach(function (v) { CLASSES.push(l + " " + v); }); });
+CLASSES.push("S5 Faith", "Other");
 
-    let currentCompound = null;
-    let currentStep = 1;
-    let selectedBondType = null;
-    let stepAnswers = {}; 
-    let builderState = { ionA: '', ionB: '', formula: [] };
-    let completed = JSON.parse(localStorage.getItem('chem_formula_completed') || '[]');
-    
-    // Challenge state
-    let isChallengeMode = false;
-    let challengeTimer = null;
-    let challengeTimeRemaining = 60;
-    let challengeScore = 0;
-    let challengeHighScore = localStorage.getItem('chem_challenge_high') || 0;
+/* Your bonding pictures (Google Drive) */
+var IMG = {
+  ionic: "https://lh3.googleusercontent.com/d/1qan1hPByKhA_LbvlmwSRdsIZc3vqcmVB",
+  covalent: "https://lh3.googleusercontent.com/d/1QpDiLAVSf0oN3aKz4YQ32HtWS9P8XSNs",
+  ionicBlank: "https://lh3.googleusercontent.com/d/1QWOZgXcOYZXMtmfMFOoMEDR_e3SuMoQ1",
+  covalentBlank: "https://lh3.googleusercontent.com/d/1erPk4yIeia1SdiSozLvolWllGA517LvC"
+};
 
-    const subMap = { '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄', '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉' };
-    const supMap = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '+': '⁺', '-': '⁻' };
+/* =================== ELEMENTS 1–20 =================== */
+var EL = {
+  H: { n: "hydrogen", z: 1, c: [1] }, Li: { n: "lithium", z: 3, c: [2, 1], m: 1 },
+  C: { n: "carbon", z: 6, c: [2, 4] }, N: { n: "nitrogen", z: 7, c: [2, 5], ide: "nitride" }, O: { n: "oxygen", z: 8, c: [2, 6], ide: "oxide" },
+  F: { n: "fluorine", z: 9, c: [2, 7], ide: "fluoride" }, Na: { n: "sodium", z: 11, c: [2, 8, 1], m: 1 }, Mg: { n: "magnesium", z: 12, c: [2, 8, 2], m: 1 },
+  Al: { n: "aluminium", z: 13, c: [2, 8, 3], m: 1 }, Si: { n: "silicon", z: 14, c: [2, 8, 4] }, P: { n: "phosphorus", z: 15, c: [2, 8, 5] },
+  S: { n: "sulfur", z: 16, c: [2, 8, 6], ide: "sulfide" }, Cl: { n: "chlorine", z: 17, c: [2, 8, 7], ide: "chloride" },
+  K: { n: "potassium", z: 19, c: [2, 8, 8, 1], m: 1 }, Ca: { n: "calcium", z: 20, c: [2, 8, 8, 2], m: 1 }
+};
+function outer(s) { var c = EL[s].c; return c[c.length - 1]; }
+function needs(s) { return s === "H" ? 1 : 8 - outer(s); }
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function gcd(a, b) { return b ? gcd(b, a % b) : a; }
 
-    const IMAGE_URLS = {
-        ionic: "https://lh3.googleusercontent.com/d/1qan1hPByKhA_LbvlmwSRdsIZc3vqcmVB",
-        covalent: "https://lh3.googleusercontent.com/d/1QpDiLAVSf0oN3aKz4YQ32HtWS9P8XSNs"
-    };
+/* =================== COMPOUNDS =================== */
+var COMPOUNDS = [];
+["Li", "Na", "K", "Mg", "Ca", "Al"].forEach(function (a) {
+  ["F", "Cl", "O", "S", "N"].forEach(function (b) {
+    var ca = outer(a), cb = needs(b), l = ca * cb / gcd(ca, cb), na = l / ca, nb = l / cb;
+    COMPOUNDS.push({ type: "ionic", a: a, b: b, ca: ca, cb: cb, na: na, nb: nb, name: EL[a].n + " " + EL[b].ide,
+      formula: a + (na > 1 ? na : "") + b + (nb > 1 ? nb : "") });
+  });
+});
+// covalent: [name, formula, central atom (null for 2-atom molecules), outer atom]
+[["methane", "CH4", "C", "H"], ["ammonia", "NH3", "N", "H"], ["water", "H2O", "O", "H"], ["hydrogen sulfide", "H2S", "S", "H"],
+ ["phosphine", "PH3", "P", "H"], ["silane", "SiH4", "Si", "H"], ["carbon dioxide", "CO2", "C", "O"], ["carbon disulfide", "CS2", "C", "S"],
+ ["tetrachloromethane", "CCl4", "C", "Cl"], ["silicon tetrachloride", "SiCl4", "Si", "Cl"], ["nitrogen trichloride", "NCl3", "N", "Cl"],
+ ["phosphorus trichloride", "PCl3", "P", "Cl"], ["tetrafluoromethane", "CF4", "C", "F"], ["oxygen difluoride", "OF2", "O", "F"],
+ ["silicon dioxide", "SiO2", "Si", "O"], ["hydrogen chloride", "HCl", null, "Cl"], ["hydrogen fluoride", "HF", null, "F"],
+ ["dichlorine monoxide", "Cl2O", "O", "Cl"], ["sulfur dichloride", "SCl2", "S", "Cl"], ["nitrogen trifluoride", "NF3", "N", "F"]
+].forEach(function (r) {
+  var parts = parseF(r[1]), syms = parts.map(function (p) { return p[0]; });
+  var center = r[2], other = r[3], first = center ? center : syms.filter(function (s) { return s !== other; })[0];
+  COMPOUNDS.push({ type: "covalent", name: r[0], formula: r[1], a: syms[0], b: syms[1], center: center, outerAtom: other, other1: first,
+    count: center ? needs(center) / needs(other) : 1 });
+});
+COMPOUNDS.forEach(function (c, i) { c.id = i; c.syms = [c.a, c.b]; });
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function parseF(f) { var out = [], re = /([A-Z][a-z]?)(\d*)/g, m; while ((m = re.exec(f))) if (m[1]) out.push([m[1], m[2] ? +m[2] : 1]); return out; }
 
-    function playTone(freq, type, duration, startOffset = 0) {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startOffset);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime + startOffset);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startOffset + duration);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + startOffset);
-        osc.stop(audioCtx.currentTime + startOffset + duration);
+/* =================== HELPERS =================== */
+var $ = function (id) { return document.getElementById(id); };
+function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function fx(f) { return esc(f).replace(/([A-Za-z\)])(\d+)/g, '$1<span class="sub">$2</span>'); }
+function ionHtml(sym, ch) { var s = Math.abs(ch) === 1 ? "" : Math.abs(ch); return esc(sym) + '<span class="sup">' + s + (ch > 0 ? "+" : "−") + "</span>"; }
+function ionTxt(sym, ch) { return sym + (Math.abs(ch) === 1 ? "" : Math.abs(ch)) + (ch > 0 ? "+" : "-"); }
+function cfg(s) { return EL[s].c.join("."); }
+function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem("sik:" + k)); localStorage.setItem("sik:" + k, JSON.stringify(v)); } catch (e) { return null; } }
+function mmss(s) { s = Math.round(s); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+
+/* =================== ERRORS =================== */
+var ERR = {
+  bondType:    { label: "Mixed up ionic and covalent", tip: "Metal + non-metal → ionic. Non-metal + non-metal → covalent." },
+  config:      { label: "Electronic configurations", tip: "Use the atomic number and fill shells 2, 8, 8: e.g. Cl (17) = 2.8.7, K (19) = 2.8.8.1." },
+  ionicShare:  { label: "Said ionic atoms share electrons", tip: "In ionic bonding, the metal LOSES electrons and the non-metal GAINS them." },
+  loseGain:    { label: "Mixed up losing and gaining", tip: "Metals lose their outer electrons; non-metals gain electrons to fill their outer shell." },
+  covShare:    { label: "Said covalent atoms lose or gain electrons", tip: "In covalent bonding, non-metal atoms SHARE electrons." },
+  eCount:      { label: "Number of electrons lost, gained or shared", tip: "Metals lose all their outer electrons. Non-metals need 8 − (outer electrons); hydrogen needs 1." },
+  ionCharge:   { label: "Ion charges", tip: "Charge = electrons lost (+) or gained (−). Na loses 1 → Na⁺; O gains 2 → O²⁻." },
+  ionSign:     { label: "Positive and negative ions swapped", tip: "Losing electrons makes a positive ion; gaining electrons makes a negative ion." },
+  central:     { label: "Choosing the central atom", tip: "The central atom is the one that needs to share more electrons (e.g. C in CH₄, O in H₂O)." },
+  ratio:       { label: "How many atoms bond to the central atom", tip: "Divide: electrons the central atom needs ÷ electrons each outer atom needs." },
+  balance:     { label: "Charges not balanced in the formula", tip: "Total positive charge must equal total negative charge, e.g. Al³⁺ and O²⁻ → Al₂O₃." },
+  swapped:     { label: "Subscript numbers swapped", tip: "Cross over the charges: Mg²⁺ and N³⁻ → Mg₃N₂ (not Mg₂N₃)." },
+  order:       { label: "Right atoms, wrong order", tip: "Write the metal first in ionic compounds, and use the usual order for molecules (H₂O, NH₃, CO₂)." },
+  covRatio:    { label: "Wrong number of atoms in a molecule", tip: "Use how many electrons each atom needs to share to work out the ratio." },
+  missing:     { label: "Formula incomplete", tip: "Both elements must appear in the formula." },
+  timeout:     { label: "Ran out of time", tip: "" }
+};
+function diagnoseFormula(c, built) {
+  if (built === c.formula) return null;
+  var p = parseF(built), key = parseF(c.formula);
+  if (p.length < 2 || p.some(function (x) { return c.syms.indexOf(x[0]) < 0; })) return "missing";
+  var cnt = {}, kc = {}; p.forEach(function (x) { cnt[x[0]] = (cnt[x[0]] || 0) + x[1]; }); key.forEach(function (x) { kc[x[0]] = x[1]; });
+  var sameCounts = c.syms.every(function (s) { return cnt[s] === kc[s]; });
+  if (sameCounts) return "order";
+  if (c.type === "ionic") {
+    if (cnt[c.a] === kc[c.b] && cnt[c.b] === kc[c.a]) return "swapped";
+    return "balance";
+  }
+  return "covRatio";
+}
+
+/* =================== SOUND =================== */
+var Sound = {
+  on: store("sfx") !== false, ctx: null,
+  tone: function (f, type, d, g, delay) {
+    if (!this.on) return;
+    try {
+      this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === "suspended") this.ctx.resume();
+      var t = this.ctx.currentTime + (delay || 0), o = this.ctx.createOscillator(), v = this.ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); v.gain.setValueAtTime(g, t); v.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(v); v.connect(this.ctx.destination); o.start(t); o.stop(t + d);
+    } catch (e) {}
+  },
+  tap: function () { this.tone(440, "sine", .05, .04); },
+  ok: function () { this.tone(523, "sine", .12, .16); this.tone(659, "sine", .22, .16, .06); },
+  no: function () { this.tone(220, "triangle", .3, .14); this.tone(207, "triangle", .45, .12, .1); },
+  end: function () { [523, 659, 784, 1047].forEach(function (n, i) { Sound.tone(n, "square", .3, .06, i * .15); }); }
+};
+$("btn-sound").classList.toggle("off", !Sound.on);
+$("btn-sound").addEventListener("click", function () { Sound.on = !Sound.on; store("sfx", Sound.on); $("btn-sound").classList.toggle("off", !Sound.on); });
+if (document.fullscreenEnabled) { $("btn-full").hidden = false; $("btn-full").addEventListener("click", function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); }); }
+
+/* =================== START =================== */
+var G = null;
+function show(id) { ["scr-start", "scr-play", "scr-result"].forEach(function (s) { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+function unlocked() { return !!store("writeformula-unlocked"); }
+function paintStart() {
+  $("best-practice").textContent = "Best: " + (store("writeformula-best-practice") || 0);
+  $("best-challenge").textContent = unlocked() ? "Best: " + (store("writeformula-best-challenge") || 0) : "🔒 Unlocks after one step-by-step round";
+  $("btn-challenge").disabled = !unlocked();
+}
+(function () {
+  $("img-duo-i").src = IMG.ionicBlank; $("img-duo-c").src = IMG.covalentBlank;
+  var sel = $("in-cls");
+  CLASSES.forEach(function (c) { var o = document.createElement("option"); o.textContent = c; sel.appendChild(o); });
+  var s = store("student") || {};
+  if (s.name) $("in-name").value = s.name;
+  if (s.cls && CLASSES.indexOf(s.cls) > -1) sel.value = s.cls;
+  if (s.reg) $("in-reg").value = s.reg;
+  paintStart();
+})();
+var lastMode = "practice";
+Array.prototype.forEach.call(document.querySelectorAll("#form-start [data-mode]"), function (b) { b.addEventListener("click", function () { lastMode = b.dataset.mode; }); });
+$("form-start").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var mode = (e.submitter && e.submitter.dataset.mode) || lastMode;
+  if (mode === "challenge" && !unlocked()) return;
+  var name = $("in-name").value.trim(), cls = $("in-cls").value, reg = $("in-reg").value.trim();
+  var err = !name ? "Please type your name." : !cls ? "Please choose your class." : !/^\d{1,2}$/.test(reg) ? "Please type your register number (numbers only)." : "";
+  $("form-err").textContent = err; if (err) return;
+  store("student", { name: name, cls: cls, reg: reg });
+  Sound.tone(1, "sine", .01, .0001);
+  startGame(mode, { name: name, cls: cls, reg: reg });
+});
+
+function startGame(mode, student) {
+  G = { mode: mode, student: student, points: 0, streak: 0, bestStreak: 0, log: [], hints: 0, startedAt: Date.now(), busy: false, done: false };
+  show("scr-play");
+  $("hud-dots").hidden = mode !== "practice"; $("steps").hidden = mode !== "practice"; $("notes").hidden = mode !== "practice";
+  $("hud-time").hidden = mode !== "challenge";
+  $("cmp-ask").textContent = mode === "practice" ? "Work out the formula of" : "Build the formula of";
+  if (mode === "practice") {
+    var ion = shuffle(COMPOUNDS.filter(function (c) { return c.type === "ionic"; })).slice(0, ROUND_IONIC);
+    var cov = shuffle(COMPOUNDS.filter(function (c) { return c.type === "covalent"; })).slice(0, ROUND_COVALENT);
+    G.round = shuffle(ion.concat(cov)); G.ci = -1;
+    $("dots").innerHTML = G.round.map(function () { return "<i></i>"; }).join("");
+    nextCompound();
+  } else {
+    G.deck = shuffle(COMPOUNDS); G.n = 0;
+    startChallengeTimer(); nextChallenge();
+  }
+}
+
+/* =================== STEP-BY-STEP =================== */
+var STEP_NAMES = ["Bond type", "Configs", "Electrons", "Ions / centre", "Formula"];
+function nextCompound() {
+  G.ci++;
+  if (G.ci >= G.round.length) { finish(); return; }
+  var c = G.c = G.round[G.ci];
+  G.rec = { c: c, steps: [], errs: [], given: [] };
+  G.step = 0; G.notes = [];
+  $("cmp-name").textContent = cap(c.name);
+  $("cmp-els").textContent = cap(EL[c.a].n) + " + " + EL[c.b].n;
+  var dots = $("dots").children; for (var i = 0; i < dots.length; i++) if (i === G.ci) dots[i].className = "now";
+  runStep();
+}
+function paintHud() {
+  $("txt-points").textContent = G.points;
+  var cb = $("txt-combo"); cb.hidden = G.streak < 2; if (G.streak >= 2) cb.textContent = Math.min(G.streak, 3) + "× combo";
+  if (G.mode === "practice") {
+    $("txt-count").textContent = "Compound " + (G.ci + 1) + "/" + G.round.length;
+    $("steps").innerHTML = STEP_NAMES.map(function (n, i) {
+      var r = G.rec.steps[i], cls = r === 2 ? "ok" : r === 1 ? "half" : r === 0 ? "no" : i === G.step ? "now" : "";
+      return '<span class="' + cls + '">' + (i + 1) + ". " + n + "</span>";
+    }).join("");
+    $("notes").innerHTML = G.notes.map(function (n) { return "<span>" + n + "</span>"; }).join("");
+  } else $("txt-count").textContent = "Formula " + (G.n || 1);
+}
+
+/* each step: ask(c) → html, wire(), read() → value or null, check(c, v) → error key or null, answer(c) → html, note(c) → html, hint(c) */
+var STEPS = [
+  { // 1. bond type
+    html: function (c) {
+      return '<p class="ask">Step 1: What type of bonding?</p><div class="bonds">' +
+        '<button class="bond" type="button" aria-pressed="false" data-v="ionic"><img src="' + IMG.ionic + '" alt="Ionic bonding"></button>' +
+        '<button class="bond" type="button" aria-pressed="false" data-v="covalent"><img src="' + IMG.covalent + '" alt="Covalent bonding"></button></div>';
+    },
+    wire: function () { pressGroup(".bond"); },
+    read: function () { var b = document.querySelector('.bond[aria-pressed="true"]'); return b ? b.dataset.v : null; },
+    check: function (c, v) { return v === c.type ? null : "bondType"; },
+    answer: function (c) { return "It's <b>" + c.type + "</b> bonding: " + (c.type === "ionic" ? cap(EL[c.a].n) + " is a metal and " + EL[c.b].n + " is a non-metal." : "both " + EL[c.a].n + " and " + EL[c.b].n + " are non-metals."); },
+    note: function (c) { return "<b>Bonding:</b> " + c.type; },
+    hint: function (c) { return "Is there a metal? " + c.syms.map(function (s) { return cap(EL[s].n) + " is a " + (EL[s].m ? "metal" : "non-metal"); }).join("; ") + "." }
+  },
+  { // 2. configs
+    html: function (c) {
+      return '<p class="ask">Step 2: Electronic configurations<small>Type the number of electrons in each shell.</small></p>' +
+        c.syms.map(function (s, i) {
+          return '<div class="el-row"><div class="el-head"><span class="sym">' + s + "</span><small>" + EL[s].n + "</small></div>" +
+            '<div class="shells">' + EL[s].c.map(function (x, j) { return (j ? "<span>.</span>" : "") + '<input data-e="' + i + '" inputmode="numeric" pattern="[0-9]*" maxlength="1" aria-label="' + s + " shell " + (j + 1) + '">'; }).join("") + "</div></div>";
+        }).join("");
+    },
+    wire: function () {
+      var ins = document.querySelectorAll(".shells input");
+      Array.prototype.forEach.call(ins, function (inp, k) {
+        inp.addEventListener("input", function () { inp.value = inp.value.replace(/\D/g, "").slice(-1); if (inp.value && ins[k + 1]) ins[k + 1].focus(); });
+        inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); submitStep(); } });
+      });
+      if (window.matchMedia("(pointer: fine)").matches && ins[0]) ins[0].focus();
+    },
+    read: function () {
+      var v = [[], []], empty = false;
+      Array.prototype.forEach.call(document.querySelectorAll(".shells input"), function (inp) { if (inp.value === "") empty = true; v[+inp.dataset.e].push(+inp.value); });
+      return empty ? null : v;
+    },
+    check: function (c, v) { return v[0].join(".") === cfg(c.a) && v[1].join(".") === cfg(c.b) ? null : "config"; },
+    give: function (v) { return v.map(function (x) { return x.join("."); }).join(" / "); },
+    answer: function (c) { return c.syms.map(function (s) { return "<b>" + s + "</b> (" + EL[s].z + " electrons): " + cfg(s); }).join("<br>"); },
+    note: function (c) { return "<b>Configs:</b> " + c.a + " " + cfg(c.a) + " · " + c.b + " " + cfg(c.b); },
+    hint: function (c) { return "Atomic numbers: " + c.a + " = " + EL[c.a].z + ", " + c.b + " = " + EL[c.b].z + ". Shells hold 2, then 8, then 8."; }
+  },
+  { // 3. lose / gain / share
+    html: function (c) {
+      return '<p class="ask">Step 3: How does each atom get a full outer shell?</p>' + c.syms.map(function (s, i) {
+        return '<div class="el-row"><div class="el-head"><span class="sym">' + s + "</span><small>" + cfg(s) + '</small></div><div class="seg">' +
+          ["lose", "gain", "share"].map(function (a) { return '<button class="tap" type="button" aria-pressed="false" data-g="act' + i + '" data-v="' + a + '">' + cap(a) + "s</button>"; }).join("") +
+          '</div><div class="seg"><span class="lbl" style="align-self:center">electrons:</span>' +
+          [1, 2, 3, 4].map(function (n) { return '<button class="tap num" type="button" aria-pressed="false" data-g="num' + i + '" data-v="' + n + '">' + n + "</button>"; }).join("") + "</div></div>";
+      }).join("");
+    },
+    wire: function () { ["act0", "act1", "num0", "num1"].forEach(function (g) { pressGroup('.tap[data-g="' + g + '"]'); }); },
+    read: function () {
+      var v = ["act0", "num0", "act1", "num1"].map(function (g) { var b = document.querySelector('.tap[data-g="' + g + '"][aria-pressed="true"]'); return b ? b.dataset.v : null; });
+      return v.indexOf(null) > -1 ? null : [[v[0], +v[1]], [v[2], +v[3]]];
+    },
+    want: function (c) { return c.type === "ionic" ? [["lose", outer(c.a)], ["gain", needs(c.b)]] : [["share", needs(c.a)], ["share", needs(c.b)]]; },
+    check: function (c, v) {
+      var w = this.want(c), acts = v.map(function (x) { return x[0]; });
+      if (c.type === "ionic") {
+        if (acts.indexOf("share") > -1) return "ionicShare";
+        if (acts[0] !== "lose" || acts[1] !== "gain") return "loseGain";
+      } else if (acts[0] !== "share" || acts[1] !== "share") return "covShare";
+      return v[0][1] === w[0][1] && v[1][1] === w[1][1] ? null : "eCount";
+    },
+    give: function (v) { return v.map(function (x) { return x[0] + "s " + x[1]; }).join(" / "); },
+    answer: function (c) { var w = this.want(c); return c.syms.map(function (s, i) { return "<b>" + s + "</b> " + w[i][0] + (w[i][0] === "share" ? "s to gain " : "s ") + w[i][1] + " electron" + (w[i][1] > 1 ? "s" : ""); }).join("<br>"); },
+    note: function (c) { var w = this.want(c); return "<b>Electrons:</b> " + c.syms.map(function (s, i) { return s + " " + w[i][0] + "s " + w[i][1]; }).join(", "); },
+    hint: function (c) {
+      return c.type === "ionic" ? c.a + " has " + outer(c.a) + " outer electron" + (outer(c.a) > 1 ? "s" : "") + ": easier to lose them. " + c.b + " has " + outer(c.b) + ": it needs " + needs(c.b) + " more to make 8."
+        : "Each atom shares to reach 8 outer electrons (hydrogen: 2). " + c.syms.map(function (s) { return s + " has " + outer(s); }).join(", ") + " outer electrons.";
     }
+  },
+  { // 4. ions (ionic) or central atom (covalent)
+    html: function (c) {
+      if (c.type === "ionic") return '<p class="ask">Step 4: What ions are formed?</p>' + c.syms.map(function (s, i) {
+        return '<div class="el-row"><div class="el-head"><span class="sym">' + s + " ion</span></div>" + '<div class="seg">' + [1, 2, 3, -1, -2, -3].map(function (ch) {
+          return '<button class="tap" type="button" aria-pressed="false" data-g="ion' + i + '" data-v="' + ch + '">' + ionHtml(s, ch) + "</button>"; }).join("") + "</div></div>";
+      }).join("");
+      var o = c.outerAtom, centerQ = c.center ? '<div class="el-row"><div class="el-head">Which is the central atom?</div><div class="seg">' + c.syms.map(function (s) {
+        return '<button class="tap" type="button" aria-pressed="false" data-g="ctr" data-v="' + s + '">' + s + "</button>"; }).join("") + "</div></div>" : "";
+      return '<p class="ask">Step 4: How do the atoms join?</p>' + centerQ +
+        '<div class="el-row"><div class="el-head">' + (c.center ? "How many " + o + " atoms bond to the central atom?" : "How many " + o + " atoms bond to one " + c.other1 + " atom?") + '</div><div class="seg">' +
+        [1, 2, 3, 4].map(function (n) { return '<button class="tap num" type="button" aria-pressed="false" data-g="cnt" data-v="' + n + '">' + n + "</button>"; }).join("") + "</div></div>";
+    },
+    wire: function () { ["ion0", "ion1", "ctr", "cnt"].forEach(function (g) { pressGroup('.tap[data-g="' + g + '"]'); }); },
+    read: function (c) {
+      var pick = function (g) { var b = document.querySelector('.tap[data-g="' + g + '"][aria-pressed="true"]'); return b ? b.dataset.v : null; };
+      if (c.type === "ionic") { var a = pick("ion0"), b = pick("ion1"); return a && b ? [+a, +b] : null; }
+      var ctr = c.center ? pick("ctr") : "-", cnt = pick("cnt"); return ctr && cnt ? [ctr, +cnt] : null;
+    },
+    check: function (c, v) {
+      if (c.type === "ionic") {
+        if (v[0] === c.ca && v[1] === -c.cb) return null;
+        if (v[0] < 0 || v[1] > 0) return "ionSign";
+        return "ionCharge";
+      }
+      if (c.center && v[0] !== c.center) return "central";
+      return v[1] === c.count ? null : "ratio";
+    },
+    give: function (v, c) { return c.type === "ionic" ? ionTxt(c.a, v[0]) + ", " + ionTxt(c.b, v[1]) : (c.center ? "centre " + v[0] + ", " : "") + v[1] + " " + c.outerAtom; },
+    answer: function (c) {
+      if (c.type === "ionic") return "Ions: <b>" + ionHtml(c.a, c.ca) + "</b> and <b>" + ionHtml(c.b, -c.cb) + "</b>";
+      return c.center ? "<b>" + c.center + "</b> is central. It needs " + needs(c.center) + " electrons; each " + c.outerAtom + " provides " + needs(c.outerAtom) + ", so <b>" + c.count + " " + c.outerAtom + "</b> atom" + (c.count > 1 ? "s" : "") + " bond to it."
+        : "Each atom needs 1 electron, so <b>1 " + c.outerAtom + "</b> bonds to 1 " + c.other1 + ".";
+    },
+    note: function (c) { return c.type === "ionic" ? "<b>Ions:</b> " + ionHtml(c.a, c.ca) + " and " + ionHtml(c.b, -c.cb) : "<b>Structure:</b> " + (c.center ? c.center + " in the centre, " + c.count + " × " + c.outerAtom : "1 " + c.other1 + " : 1 " + c.outerAtom); },
+    hint: function (c) { return c.type === "ionic" ? "Losing electrons → positive ion; gaining → negative ion. The charge equals the number of electrons lost or gained." : (c.center ? "The central atom needs to share more electrons. " : "") + "Divide the electrons needed by the central atom by the electrons each outer atom needs."; }
+  },
+  { // 5. formula
+    html: function (c) {
+      return '<p class="ask">Step 5: Write the formula</p>' + formulaPadHtml(c);
+    },
+    wire: function (c) { wireFormulaPad(); },
+    read: function () { return G.fbuf.join("") || null; },
+    check: function (c, v) { return diagnoseFormula(c, v); },
+    give: function (v) { return v; },
+    answer: function (c) { return "The formula is <b>" + fx(c.formula) + "</b>" + (c.type === "ionic" ? ": " + c.na + " × (" + ionHtml(c.a, c.ca) + ") balances " + c.nb + " × (" + ionHtml(c.b, -c.cb) + ")." : "."); },
+    note: function (c) { return "<b>Formula:</b> " + fx(c.formula); },
+    hint: function (c) { return c.type === "ionic" ? "Total positive charge must equal total negative charge. Write the metal first." : "Use the ratio from step 4. Write it in the usual order (e.g. H₂O, NH₃, CO₂)."; }
+  }
+];
+function pressGroup(sel) {
+  Array.prototype.forEach.call(document.querySelectorAll(sel), function (b) {
+    b.addEventListener("click", function () {
+      if (G.busy) return; Sound.tap();
+      Array.prototype.forEach.call(document.querySelectorAll(sel), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    });
+  });
+}
+function formulaPadHtml(c) {
+  return '<div class="fbox" id="fbox"><span class="ph">Tap the buttons to build it</span></div><div class="fpad">' +
+    c.syms.map(function (s) { return '<button class="k el" type="button" data-f="' + s + '">' + s + "</button>"; }).join("") +
+    '<button class="k n" type="button" data-f="2">₂</button><button class="k n" type="button" data-f="3">₃</button><button class="k n" type="button" data-f="4">₄</button>' +
+    '<button class="k del" type="button" data-f="del" aria-label="Delete">⌫</button><button class="k del" type="button" data-f="clr">Clear</button></div>';
+}
+function wireFormulaPad() {
+  G.fbuf = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".fpad .k"), function (b) {
+    b.addEventListener("click", function () {
+      if (G.busy) return; Sound.tap();
+      var f = b.dataset.f;
+      if (f === "del") G.fbuf.pop(); else if (f === "clr") G.fbuf = []; else G.fbuf.push(f);
+      $("fbox").innerHTML = G.fbuf.length ? fx(G.fbuf.join("")) : '<span class="ph">Tap the buttons to build it</span>';
+    });
+  });
+}
 
-    function soundCorrect() {
-        playTone(523.25, 'sine', 0.1); 
-        setTimeout(() => playTone(659.25, 'sine', 0.2), 50); 
-    }
+function runStep() {
+  var st = STEPS[G.step], c = G.c;
+  G.tries = 0; G.busy = false; $("hint-box").hidden = true;
+  $("flash").hidden = true; $("stage").hidden = false;
+  $("stage").innerHTML = st.html(c) + '<p class="msg-err" id="step-err" hidden></p><button class="btn big" id="btn-check" type="button">Check</button>';
+  st.wire(c);
+  $("btn-check").addEventListener("click", submitStep);
+  paintHud();
+}
+function submitStep() {
+  if (G.busy) return;
+  var st = STEPS[G.step], c = G.c, v = st.read(c);
+  if (v === null) { var e = $("step-err"); e.textContent = "Finish this step before checking."; e.hidden = false; return; }
+  var err = st.check(c, v);
+  G.tries++;
+  if (!err) {
+    var pts = G.tries === 1 ? 20 : 10; G.points += pts;
+    G.rec.steps[G.step] = G.tries === 1 ? 2 : 1;
+    Sound.ok(); G.notes.push(st.note(c)); paintHud();
+    G.busy = true; flash("✓ Correct! +" + pts); setTimeout(advance, 700); return;
+  }
+  G.rec.errs.push(err); G.rec.given.push("Step " + (G.step + 1) + ": " + (st.give ? st.give(v, c) : v));
+  Sound.no();
+  if (G.tries < TRIES) {
+    var e2 = $("step-err"); e2.innerHTML = "Not quite. " + esc(ERR[err].tip) + " Try once more."; e2.hidden = false;
+    var hb = $("hint-box"); hb.textContent = "💡 " + st.hint(c); hb.hidden = false;
+    if (G.step === 4) { G.fbuf = []; $("fbox").innerHTML = '<span class="ph">Tap the buttons to build it</span>'; }
+    return;
+  }
+  G.rec.steps[G.step] = 0; G.notes.push(st.note(c)); paintHud();
+  G.busy = true; $("hint-box").hidden = true;
+  $("stage").innerHTML = '<div class="reveal"><h3>Here\'s the answer</h3><p class="ans">' + st.answer(c) + '</p><p>' + esc(ERR[err].tip) + '</p><button class="btn teal" id="btn-cont" type="button">' + (G.step === 4 ? "Next compound →" : "Continue →") + "</button></div>";
+  $("btn-cont").addEventListener("click", advance); $("btn-cont").focus({ preventScroll: true });
+}
+function advance() {
+  G.busy = false;
+  if (G.step < STEPS.length - 1) { G.step++; runStep(); return; }
+  var perfect = G.rec.steps.every(function (s) { return s === 2; }), bonus = 0;
+  if (perfect) { G.streak++; G.bestStreak = Math.max(G.bestStreak, G.streak); bonus = 50 * Math.min(G.streak, 3); G.points += bonus; } else G.streak = 0;
+  G.rec.ok = perfect; G.log.push(G.rec);
+  $("dots").children[G.ci].className = perfect ? "ok" : "no";
+  paintHud();
+  if (perfect) { Sound.ok(); flash("🎉 " + cap(G.c.name) + " = " + fx(G.c.formula) + " · perfect! +" + bonus, true); setTimeout(nextCompound, 1300); }
+  else nextCompound();
+}
+function flash(html, big) { $("stage").hidden = true; var f = $("flash"); f.className = "flash" + (big ? " big" : ""); f.innerHTML = html; f.hidden = false; }
+$("btn-hint").addEventListener("click", function () {
+  if (!G || G.mode !== "practice") return;
+  var hb = $("hint-box"); if (!hb.hidden) { hb.hidden = true; return; }
+  hb.textContent = "💡 " + STEPS[G.step].hint(G.c); hb.hidden = false; G.hints++;
+});
 
-    function soundWrong() {
-        playTone(220, 'triangle', 0.3); 
-        playTone(207.65, 'triangle', 0.5, 0.1); 
-    }
+/* =================== 60-SECOND CHALLENGE =================== */
+function startChallengeTimer() {
+  var t0 = performance.now(), last = -1;
+  (function frame(now) {
+    if (G.done) return;
+    now = now || performance.now();
+    var left = Math.max(0, CHALLENGE_SECONDS - (now - t0) / 1000);
+    $("bar-time").style.width = (left / CHALLENGE_SECONDS * 100) + "%"; $("bar-time").classList.toggle("warn", left <= 10);
+    var s = Math.ceil(left); if (s !== last) { $("txt-secs").textContent = s + "s"; last = s; }
+    if (left <= 0) { finish(); return; }
+    G.raf = requestAnimationFrame(frame);
+  })();
+}
+function nextChallenge() {
+  if (!G.deck.length) G.deck = shuffle(COMPOUNDS);
+  var c = G.c = G.deck.pop(); G.n++; G.busy = false;
+  $("cmp-name").textContent = cap(c.name); $("cmp-els").textContent = "";
+  $("flash").hidden = true; $("stage").hidden = false;
+  $("stage").innerHTML = formulaPadHtml(c) + '<button class="btn big" id="btn-check" type="button">Check</button>';
+  wireFormulaPad(); $("btn-check").addEventListener("click", checkChallenge);
+  paintHud();
+}
+function checkChallenge() {
+  if (G.busy || G.done || !G.fbuf.length) return;
+  var c = G.c, built = G.fbuf.join(""), err = diagnoseFormula(c, built), ok = !err;
+  G.log.push({ c: c, ok: ok, errs: err ? [err] : [], given: [built] });
+  var q = document.createElement("div"); q.className = "quick-ans" + (ok ? " ok" : "");
+  if (ok) { G.streak++; G.bestStreak = Math.max(G.streak, G.bestStreak); var g = 10 * Math.min(G.streak, 3); G.points += g; Sound.ok(); q.innerHTML = "✓ +" + g; }
+  else { G.streak = 0; Sound.no(); q.innerHTML = "✗ " + esc(cap(c.name)) + " = " + fx(c.formula); }
+  document.body.appendChild(q); setTimeout(function () { q.remove(); }, ok ? 800 : 1400);
+  paintHud(); G.busy = true;
+  setTimeout(function () { if (!G.done) nextChallenge(); }, ok ? 300 : 1000);
+}
+document.addEventListener("keydown", function (e) {
+  if (!G || $("scr-play").hidden || G.done) return;
+  var reveal = $("btn-cont");
+  if (reveal && e.key === "Enter") { e.preventDefault(); reveal.click(); return; }
+  if (G.mode === "challenge" && e.key === "Enter") { e.preventDefault(); checkChallenge(); }
+  if (G.mode === "challenge" && e.key === "Backspace") { e.preventDefault(); var d = document.querySelector('.fpad [data-f="del"]'); if (d) d.click(); }
+});
 
-    function soundFanfare() {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((freq, i) => playTone(freq, 'square', 0.3, i * 0.15));
-    }
+/* =================== RESULTS =================== */
+function finish() {
+  if (G.done) return; G.done = true; cancelAnimationFrame(G.raf);
+  var log = G.log, secs = (Date.now() - G.startedAt) / 1000, errCount = {};
+  log.forEach(function (x) { x.errs.forEach(function (e) { errCount[e] = (errCount[e] || 0) + 1; }); });
+  var errs = Object.keys(errCount).sort(function (a, b) { return errCount[b] - errCount[a]; });
+  var bestKey = "writeformula-best-" + G.mode; if (G.points > (store(bestKey) || 0)) store(bestKey, G.points);
+  var first = G.student.name.split(" ")[0], rows = [], pct, payload, summary;
+  var byType = {}; log.forEach(function (x) { var t = byType[x.c.type] = byType[x.c.type] || [0, 0]; t[1]++; if (x.ok) t[0]++; });
 
-    function formatChem(text) {
-        if (!text) return "";
-        let result = "";
-        let i = 0;
-        while (i < text.length) {
-            let char = text[i];
-            if ((currentStep === 4 && !isChallengeMode) || text.includes('+') || text.includes('-')) {
-                let remaining = text.substring(i);
-                let chargeMatch = remaining.match(/^(\d*[+-])/);
-                if (chargeMatch) {
-                    let chargeStr = chargeMatch[1];
-                    for (let c of chargeStr) result += supMap[c] || c;
-                    i += chargeStr.length;
-                    continue;
-                }
-            }
-            if (/[0-9]/.test(char) && i > 0 && /[a-zA-Z]/.test(text[i-1])) {
-                result += subMap[char] || char;
-            } else {
-                result += char;
-            }
-            i++;
-        }
-        return result;
-    }
+  if (G.mode === "practice") {
+    store("writeformula-unlocked", true);
+    var perfect = log.filter(function (x) { return x.ok; }).length, stepFirst = 0, byStep = STEP_NAMES.map(function () { return [0, 0]; });
+    log.forEach(function (x) { x.steps.forEach(function (s, i) { byStep[i][1]++; if (s === 2) { byStep[i][0]++; stepFirst++; } }); });
+    var totalSteps = log.length * STEPS.length; pct = Math.round(100 * stepFirst / totalSteps);
+    $("res-l1").textContent = "Steps right first time"; $("res-v1").textContent = stepFirst + "/" + totalSteps;
+    $("res-l2").textContent = "Perfect compounds"; $("res-v2").textContent = perfect + "/" + log.length;
+    ["Bond type", "Electronic config", "Lose / gain / share", "Ions / central atom", "Writing the formula"].forEach(function (n, i) { rows.push([n, byStep[i]]); });
+    $("res-title").textContent = pct >= 80 ? "Formula Master, " + first + "!" : pct >= 50 ? "Good work, " + first + "!" : "Keep practising, " + first + "!";
+    $("res-msg").textContent = "You worked through " + log.length + " compounds. The 60-second Formula Challenge is now unlocked!";
+    summary = "Perfect compounds: " + perfect + "/" + log.length + " | Steps first try: " + STEP_NAMES.map(function (n, i) { return n.toLowerCase() + " " + byStep[i][0] + "/" + byStep[i][1]; }).join(", ") +
+      " | Ionic " + (byType.ionic ? byType.ionic[0] + "/" + byType.ionic[1] : "0/0") + " perfect, covalent " + (byType.covalent ? byType.covalent[0] + "/" + byType.covalent[1] : "0/0") +
+      " | Errors: " + (errs.length ? errs.map(function (e) { return ERR[e].label + " x" + errCount[e]; }).join("; ") : "none") + " | Hints: " + G.hints;
+    payload = { chapter: "Step-by-step round", score: stepFirst, total: totalSteps };
+  } else {
+    var correct = log.filter(function (x) { return x.ok; }).length;
+    pct = log.length ? Math.round(100 * correct / log.length) : 0;
+    $("res-l1").textContent = "Formulae correct"; $("res-v1").textContent = correct + "/" + log.length;
+    $("res-l2").textContent = "Best combo"; $("res-v2").textContent = G.bestStreak;
+    $("res-title").textContent = pct >= 80 && correct >= 8 ? "Speedy chemist, " + first + "!" : "Time's up, " + first + "!";
+    $("res-msg").textContent = "You built " + correct + " correct formula" + (correct === 1 ? "" : "e") + " in " + CHALLENGE_SECONDS + " seconds.";
+    summary = "Ionic " + (byType.ionic ? byType.ionic[0] + "/" + byType.ionic[1] : "0/0") + ", covalent " + (byType.covalent ? byType.covalent[0] + "/" + byType.covalent[1] : "0/0") +
+      " | Errors: " + (errs.length ? errs.map(function (e) { return ERR[e].label + " x" + errCount[e]; }).join("; ") : "none") + " | Best combo: " + G.bestStreak;
+    payload = { chapter: "60s Formula Challenge", score: correct, total: log.length };
+  }
+  ["ionic", "covalent"].forEach(function (t) { if (byType[t]) rows.push([cap(t) + (G.mode === "practice" ? " (perfect)" : ""), byType[t]]); });
+  $("res-ring").style.setProperty("--p", pct); $("res-pct").textContent = pct + "%";
+  $("res-time").textContent = mmss(secs); $("res-points").textContent = G.points;
+  $("res-bars").innerHTML = rows.map(function (r) { var p = r[1][1] ? Math.round(100 * r[1][0] / r[1][1]) : 0; return '<div class="bar-row"><span>' + r[0] + '</span><div class="bar"><i class="' + (p < 60 ? "low" : "") + '" style="width:' + p + '%"></i></div><span class="n">' + r[1][0] + "/" + r[1][1] + "</span></div>"; }).join("");
+  $("res-weak").innerHTML = errs.length ? errs.slice(0, 4).map(function (e) { return "<li><b>" + esc(ERR[e].label) + (errCount[e] > 1 ? " ×" + errCount[e] : "") + "</b><span>" + esc(ERR[e].tip) + "</span></li>"; }).join("")
+    : '<li class="good"><b>Nothing to fix this time!</b><span>Try to beat your points score.</span></li>';
+  var wrong = log.filter(function (x) { return x.errs.length; });
+  $("res-review").innerHTML = wrong.length ? wrong.map(function (x) {
+    return "<li><b>" + esc(cap(x.c.name)) + '</b> = <span class="key">' + fx(x.c.formula) + "</span><br>" + x.errs.map(function (e, i) { return '<span class="you">✗ ' + esc(ERR[e].label) + "</span>" + (x.given[i] ? " (you: " + (G.mode === "challenge" ? fx(x.given[i]) : esc(x.given[i])) + ")" : ""); }).join("<br>") + "</li>";
+  }).join("") : "<li>No mistakes. Well done!</li>";
+  $("btn-again").textContent = G.mode === "practice" ? "New round ↻" : "Play again ↻";
+  show("scr-result"); Sound.end(); if (pct >= 80 && log.length >= 5) Confetti.go();
 
-    function selectBondType(type) {
-        selectedBondType = type;
-        document.querySelectorAll('.image-option').forEach(el => el.classList.remove('selected'));
-        document.getElementById(`opt-${type}`).classList.add('selected');
-    }
+  var wrongTxt = wrong.map(function (x) { return x.c.formula + ": " + x.given.join("; "); }).join(" | ");
+  send({ course: SHEET_TAB, chapter: payload.chapter, name: G.student.name, cls: G.student.cls, reg: G.student.reg,
+    score: payload.score, total: payload.total, wrong: wrongTxt || "None", time: Math.round(secs), points: G.points, summary: summary });
+}
+function send(payload) {
+  G.payload = payload;
+  var box = $("send"), msg = $("send-msg"), btn = $("btn-resend");
+  box.className = "send span"; btn.hidden = true; msg.textContent = "Sending your results to Ms Khoo…";
+  if (!SUBMIT_URL) { msg.textContent = "Results not sent (no Google Sheet link set up)."; return; }
+  fetch(SUBMIT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
+    .then(function () { msg.textContent = "✓ Sent! Ms Khoo has your results."; })
+    .catch(function () { box.className = "send span err"; msg.textContent = "Couldn't send. Check your internet, then tap Try again."; btn.hidden = false; });
+}
+$("btn-resend").addEventListener("click", function () { send(G.payload); });
+$("btn-again").addEventListener("click", function () { Confetti.stop(); startGame(G.mode, G.student); });
+$("btn-home").addEventListener("click", function () { Confetti.stop(); paintStart(); show("scr-start"); });
 
-    function closeChallengeModal() {
-        document.getElementById('challenge-modal-overlay').classList.remove('show');
-    }
+/* =================== CONFETTI =================== */
+var Confetti = {
+  c: $("confetti"), on: false,
+  go: function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var c = this.c, w = c.width = innerWidth, h = c.height = innerHeight, cols = ["#FF8243", "#FFC0CB", "#FCE883", "#069494"], p = [];
+    c.hidden = false; this.on = true;
+    for (var i = 0; i < 110; i++) p.push({ x: Math.random() * w, y: -Math.random() * h, s: 6 + Math.random() * 8, v: 2 + Math.random() * 3, a: Math.random() * 6, col: cols[i % 4] });
+    var self = this, ctx = c.getContext("2d");
+    (function loop() {
+      if (!self.on) return; ctx.clearRect(0, 0, w, h); var alive = false;
+      p.forEach(function (q) { q.y += q.v; q.a += .08; q.x += Math.sin(q.a) * 1.2; if (q.y < h + 20) alive = true;
+        ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(q.a); ctx.fillStyle = q.col; ctx.strokeStyle = "#1F2A2E"; ctx.lineWidth = 1.5;
+        ctx.fillRect(-q.s / 2, -q.s / 4, q.s, q.s / 2); ctx.strokeRect(-q.s / 2, -q.s / 4, q.s, q.s / 2); ctx.restore(); });
+      if (alive) requestAnimationFrame(loop); else self.stop();
+    })();
+  },
+  stop: function () { this.on = false; this.c.hidden = true; }
+};
 
-    function showHome() {
-        if (challengeTimer) clearInterval(challengeTimer);
-        isChallengeMode = false;
-        document.body.className = "home-active";
-        document.getElementById('home-screen').style.display = 'flex';
-        document.getElementById('game-screen').style.display = 'none';
-        renderHome();
-        
-        if (completed.length === compounds.length && !localStorage.getItem('challenge_seen')) {
-            document.getElementById('challenge-modal-overlay').classList.add('show');
-            localStorage.setItem('challenge_seen', 'true');
-        }
-    }
-
-    function renderHome() {
-        const list = document.getElementById('level-list');
-        list.innerHTML = '';
-        compounds.forEach(c => {
-            const div = document.createElement('div');
-            div.className = `level-card ${completed.includes(c.id) ? 'completed' : ''}`;
-            div.innerHTML = `
-                <div style="font-size: 1.2rem; margin-bottom: 0.2rem;">${completed.includes(c.id) ? '✅' : '🧪'}</div>
-                <strong style="display:block; color: #1e293b; font-size: 0.85rem; line-height: 1.1;">${c.name}</strong>
-                <small style="color:var(--primary); font-weight: bold; margin-top: 5px;">${completed.includes(c.id) ? formatChem(c.formula) : 'Start'}</small>
-            `;
-            div.onclick = () => startLevel(c);
-            list.appendChild(div);
-        });
-
-        if (completed.length === compounds.length) {
-            const chalBtn = document.createElement('div');
-            chalBtn.className = 'level-card';
-            chalBtn.style.background = 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)';
-            chalBtn.style.color = 'white';
-            chalBtn.style.border = 'none';
-            chalBtn.innerHTML = `
-                <div style="font-size: 1.2rem;">🏆</div>
-                <strong style="font-size: 0.85rem;">Mastery Challenge</strong>
-                <small style="opacity: 0.9">High Score: ${challengeHighScore}</small>
-            `;
-            chalBtn.onclick = startChallenge;
-            list.appendChild(chalBtn);
-        }
-    }
-
-    function startLevel(compound) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        document.body.className = "game-active";
-        currentCompound = compound;
-        currentStep = 1;
-        isChallengeMode = false;
-        selectedBondType = null;
-        stepAnswers = {};
-        builderState = { ionA: '', ionB: '', formula: [] };
-        document.getElementById('home-screen').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex';
-        document.getElementById('current-compound-name').innerText = compound.name;
-        document.getElementById('back-btn').style.display = 'block';
-        renderStep();
-    }
-
-    function startChallenge() {
-        closeChallengeModal();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        document.body.className = "game-active";
-        isChallengeMode = true;
-        challengeScore = 0;
-        challengeTimeRemaining = 60;
-        document.getElementById('home-screen').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex';
-        document.getElementById('back-btn').style.display = 'none';
-        
-        pickChallengeCompound();
-        
-        challengeTimer = setInterval(() => {
-            challengeTimeRemaining--;
-            updateChallengeStats();
-            if (challengeTimeRemaining <= 0) {
-                endChallenge();
-            }
-        }, 1000);
-    }
-
-    function pickChallengeCompound() {
-        const prevId = currentCompound?.name;
-        let pool = challengePool.filter(c => c.name !== prevId);
-        currentCompound = pool[Math.floor(Math.random() * pool.length)];
-        builderState = { ionA: '', ionB: '', formula: [] };
-        renderStep();
-    }
-
-    function updateChallengeStats() {
-        const stats = document.getElementById('stats-container');
-        stats.innerHTML = `
-            <div id="current-compound-name" style="font-weight:bold; font-size: 1.2rem; color: var(--primary); margin-right: 10px;">${currentCompound.name}</div>
-            <span class="badge badge-timer">⏱️ ${challengeTimeRemaining}s</span>
-            <span class="badge" style="background: #dcfce7; color: #166534;">⭐ Score: ${challengeScore}</span>
-        `;
-        document.getElementById('step-count').innerText = "CHALLENGE";
-    }
-
-    function endChallenge() {
-        clearInterval(challengeTimer);
-        // Play fanfare sound upon challenge completion
-        soundFanfare();
-        
-        if (challengeScore > challengeHighScore) {
-            challengeHighScore = challengeScore;
-            localStorage.setItem('chem_challenge_high', challengeHighScore);
-        }
-
-        const ui = document.getElementById('step-ui');
-        ui.innerHTML = `
-            <div style="text-align:center; padding: 2rem;">
-                <h2 style="color:var(--primary)">Time's Up!</h2>
-                <div style="font-size: 4rem; margin: 1rem 0;">🏁</div>
-                <p style="font-size: 1.2rem">You correctly identified <strong>${challengeScore}</strong> formulas!</p>
-                <p>High Score: ${challengeHighScore}</p>
-                <button class="btn-primary" onclick="startChallenge()">Play Again</button>
-                <button class="btn-outline" style="width:100%; margin-top:10px" onclick="showHome()">Return Home</button>
-            </div>
-        `;
-        document.getElementById('submit-btn').style.display = 'none';
-        document.getElementById('feedback').style.display = 'none';
-    }
-
-    function updateHistory() {
-        const historyArea = document.getElementById('history-area');
-        const historyList = document.getElementById('history-list');
-        if (isChallengeMode || Object.keys(stepAnswers).length === 0) {
-            historyArea.style.display = 'none';
-            return;
-        }
-        historyArea.style.display = 'block';
-        historyList.innerHTML = '';
-        Object.keys(stepAnswers).forEach(stepNum => {
-            const div = document.createElement('div');
-            div.innerHTML = `<small style="color:#64748b">Step ${stepNum}:</small> <span style="font-weight:bold">${stepAnswers[stepNum]}</span>`;
-            historyList.appendChild(div);
-        });
-    }
-
-    function updateBuilderUI() {
-        if (!isChallengeMode && currentStep === 4 && currentCompound.type === 'ionic') {
-            document.getElementById('display-ion-a').innerText = formatChem(currentCompound.symbols[0] + builderState.ionA);
-            document.getElementById('display-ion-b').innerText = formatChem(currentCompound.symbols[1] + builderState.ionB);
-        } else if (isChallengeMode || currentStep === 5) {
-            document.getElementById('display-formula').innerText = formatChem(builderState.formula.join(''));
-        }
-    }
-
-    function addToFormula(val) {
-        builderState.formula.push(val);
-        updateBuilderUI();
-    }
-
-    function clearFormula() {
-        builderState.formula = [];
-        updateBuilderUI();
-    }
-
-    function renderStep() {
-        const ui = document.getElementById('step-ui');
-        const feedback = document.getElementById('feedback');
-        const submit = document.getElementById('submit-btn');
-        const stepCount = document.getElementById('step-count');
-        
-        submit.style.display = 'block';
-        updateHistory();
-        feedback.className = 'feedback';
-        
-        if (isChallengeMode) {
-            updateChallengeStats();
-            submit.innerText = "Check Formula";
-            ui.innerHTML = `
-                <h3 style="text-align:center">Construct the Formula</h3>
-                <div class="builder-area">
-                    <div id="display-formula" class="display-box">
-                        <span style="position:absolute; right:10px; font-size:0.6rem; cursor:pointer; color:red" onclick="clearFormula()">RESET</span>
-                    </div>
-                    <div class="selection-row" style="justify-content: center;">
-                        ${currentCompound.symbols.map(s => `<div class="chip" onclick="addToFormula('${s}')">${s}</div>`).join('')}
-                        ${[2, 3, 4].map(n => `<div class="chip" onclick="addToFormula('${n}')">${subMap[n]}</div>`).join('')}
-                    </div>
-                </div>
-            `;
-            updateBuilderUI();
-            submit.onclick = validate;
-            return;
-        }
-
-        stepCount.innerText = `Step ${currentStep}/5`;
-        submit.innerText = currentStep === 5 ? "Complete Challenge" : "Check Answer";
-
-        let html = `
-            <button class="btn-hint" onclick="document.getElementById('hint-box').classList.toggle('show')">💡 Get a Hint</button>
-            <div id="hint-box" class="hint-box">${getHint()}</div>
-        `;
-        
-        switch(currentStep) {
-            case 1:
-                html += `
-                    <h3>Step 1: Determine Type of Bonding</h3>
-                    <div class="image-selection-container">
-                        <div id="opt-ionic" class="image-option" onclick="selectBondType('ionic')">
-                            <img src="${IMAGE_URLS.ionic}" alt="Ionic">
-                            <span>Ionic bonding</span>
-                        </div>
-                        <div id="opt-covalent" class="image-option" onclick="selectBondType('covalent')">
-                            <img src="${IMAGE_URLS.covalent}" alt="Covalent">
-                            <span>Covalent bonding</span>
-                        </div>
-                    </div>`;
-                break;
-            case 2:
-                html += `
-                    <h3>Step 2: Electronic Configurations</h3>
-                    <div class="input-group">
-                        <span>${currentCompound.symbols[0]}: </span>
-                        ${currentCompound.config.a.map(() => `<input type="number" class="shell-input shell-a" placeholder="?">`).join('.')}
-                    </div>
-                    <div class="input-group">
-                        <span>${currentCompound.symbols[1]}: </span>
-                        ${currentCompound.config.b.map(() => `<input type="number" class="shell-input shell-b" placeholder="?">`).join('.')}
-                    </div>`;
-                break;
-            case 3:
-                const isIonic = currentCompound.type === 'ionic';
-                html += `
-                    <h3>Step 3: Gain/Loss for Stability</h3>
-                    <div class="input-group">
-                        <span>${currentCompound.symbols[0]} will: </span>
-                        <select id="action-a">
-                            <option value="">Choose...</option>
-                            <option value="${isIonic ? 'lose' : 'needs'}">${isIonic ? 'Lose' : 'Share (needs)'}</option>
-                            <option value="${isIonic ? 'gain' : 'ignore'}">${isIonic ? 'Gain' : 'N/A'}</option>
-                        </select>
-                        <input type="number" id="num-a" class="shell-input" placeholder="0"> electrons.
-                    </div>
-                    <div class="input-group">
-                        <span>${currentCompound.symbols[1]} will: </span>
-                        <select id="action-b">
-                            <option value="">Choose...</option>
-                            <option value="gain">Gain</option>
-                            <option value="needs">Share (needs)</option>
-                            <option value="lose">Lose</option>
-                        </select>
-                        <input type="number" id="num-b" class="shell-input" placeholder="0"> electrons.
-                    </div>`;
-                break;
-            case 4:
-                if(currentCompound.type === 'ionic') {
-                    html += `
-                        <h3>Step 4: Build the Ions</h3>
-                        <div class="builder-area">
-                            <div>
-                                <strong>${currentCompound.symbols[0]} Ion:</strong>
-                                <div id="display-ion-a" class="display-box"></div>
-                                <div class="selection-row">
-                                    ${['+', '2+', '3+', '-', '2-'].map(c => `<div class="chip" onclick="builderState.ionA='${c}';updateBuilderUI()">${formatChem(c)}</div>`).join('')}
-                                </div>
-                            </div>
-                            <div style="margin-top: 15px">
-                                <strong>${currentCompound.symbols[1]} Ion:</strong>
-                                <div id="display-ion-b" class="display-box"></div>
-                                <div class="selection-row">
-                                    ${['+', '2+', '-', '2-', '3-'].map(c => `<div class="chip" onclick="builderState.ionB='${c}';updateBuilderUI()">${formatChem(c)}</div>`).join('')}
-                                </div>
-                            </div>
-                        </div>`;
-                } else {
-                    html += `
-                        <h3>Step 4: Central Atom</h3>
-                        <div class="input-group">
-                            <span>Which atom is central?</span>
-                            <select id="center-atom">
-                                <option value="">Select...</option>
-                                <option value="${currentCompound.symbols[0]}">${currentCompound.symbols[0]}</option>
-                                <option value="${currentCompound.symbols[1]}">${currentCompound.symbols[1]}</option>
-                            </select>
-                        </div>`;
-                }
-                break;
-            case 5:
-                html += `
-                    <h3>Step 5: Construct Final Formula</h3>
-                    <div class="builder-area">
-                        <div id="display-formula" class="display-box">
-                            <span style="position:absolute; right:10px; font-size:0.6rem; cursor:pointer; color:red" onclick="clearFormula()">RESET</span>
-                        </div>
-                        <div class="selection-row">
-                            ${currentCompound.symbols.map(s => `<div class="chip" onclick="addToFormula('${s}')">${s}</div>`).join('')}
-                            ${[2, 3, 4].map(n => `<div class="chip" onclick="addToFormula('${n}')">${subMap[n]}</div>`).join('')}
-                        </div>
-                    </div>`;
-                break;
-        }
-        ui.innerHTML = html;
-        if (currentStep >= 4) updateBuilderUI();
-        submit.onclick = validate;
-    }
-
-    function getHint() {
-        const s0 = currentCompound.symbols[0];
-        const s1 = currentCompound.symbols[1];
-        switch(currentStep) {
-            case 1: return `Is there a metal? ${s0} is ${['Na', 'Mg', 'Al', 'K', 'Ca', 'Li', 'Be'].includes(s0) ? 'a Metal' : 'a Non-metal'}. Metal + Non-metal = Ionic.`;
-            case 2: return `Atomic numbers: ${s0} is ${currentCompound.config.a.reduce((a,b)=>a+b)}, ${s1} is ${currentCompound.config.b.reduce((a,b)=>a+b)}.`;
-            case 3: return `Atoms want 8 outer electrons. ${s0} has ${currentCompound.config.a.slice(-1)}.`;
-            case 4: return currentCompound.type === 'ionic' ? "Losing electrons = positive charge." : "The central atom usually needs more electrons.";
-            case 5: return "Total charges must balance to zero in ionic compounds.";
-            default: return "";
-        }
-    }
-
-    function validate() {
-        const feedback = document.getElementById('feedback');
-        let isCorrect = false;
-        let summary = "";
-
-        if (isChallengeMode) {
-            isCorrect = builderState.formula.join('').toLowerCase() === currentCompound.formula.toLowerCase();
-            if (isCorrect) {
-                challengeScore++;
-                soundCorrect();
-                pickChallengeCompound();
-            } else {
-                soundWrong();
-                feedback.innerText = "Incorrect formula!";
-                feedback.className = "feedback wrong show";
-                // Reset formula back to blank on error in challenge mode
-                clearFormula();
-                setTimeout(() => feedback.classList.remove('show'), 800);
-            }
-            return;
-        }
-
-        if (currentStep === 1) {
-            isCorrect = selectedBondType === currentCompound.type;
-            summary = currentCompound.type.charAt(0).toUpperCase() + currentCompound.type.slice(1);
-        } else if (currentStep === 2) {
-            const valA = Array.from(document.querySelectorAll('.shell-a')).map(i => parseInt(i.value));
-            const valB = Array.from(document.querySelectorAll('.shell-b')).map(i => parseInt(i.value));
-            isCorrect = JSON.stringify(valA) === JSON.stringify(currentCompound.config.a) && 
-                        JSON.stringify(valB) === JSON.stringify(currentCompound.config.b);
-            summary = `${valA.join('.')} | ${valB.join('.')}`;
-        } else if (currentStep === 3) {
-            const actA = document.getElementById('action-a').value;
-            const numA = parseInt(document.getElementById('num-a').value);
-            const actB = document.getElementById('action-b').value;
-            const numB = parseInt(document.getElementById('num-b').value);
-            isCorrect = actA === currentCompound.goal.a[0] && numA === currentCompound.goal.a[1] &&
-                        actB === currentCompound.goal.b[0] && numB === currentCompound.goal.b[1];
-            summary = `${actA} ${numA} | ${actB} ${numB}`;
-        } else if (currentStep === 4) {
-            if (currentCompound.type === 'ionic') {
-                const ionA = (currentCompound.symbols[0] + builderState.ionA).toLowerCase().replace('1+', '+');
-                const ionB = (currentCompound.symbols[1] + builderState.ionB).toLowerCase().replace('1-', '-');
-                const targetA = currentCompound.ions.a.toLowerCase().replace('1+', '+');
-                const targetB = currentCompound.ions.b.toLowerCase().replace('1-', '-');
-                isCorrect = ionA === targetA && ionB === targetB;
-                summary = `${formatChem(currentCompound.ions.a)}, ${formatChem(currentCompound.ions.b)}`;
-            } else {
-                const center = document.getElementById('center-atom').value;
-                isCorrect = center === currentCompound.symbols[0];
-                summary = `Center: ${center}`;
-            }
-        } else if (currentStep === 5) {
-            isCorrect = builderState.formula.join('').toLowerCase() === currentCompound.formula.toLowerCase();
-        }
-
-        if (isCorrect) {
-            feedback.innerText = "Correct!";
-            feedback.className = "feedback correct show";
-            if (currentStep === 5) soundFanfare(); else soundCorrect();
-            stepAnswers[currentStep] = summary;
-            setTimeout(() => {
-                if (currentStep < 5) {
-                    currentStep++;
-                    renderStep();
-                } else {
-                    if (!completed.includes(currentCompound.id)) {
-                        completed.push(currentCompound.id);
-                        localStorage.setItem('chem_formula_completed', JSON.stringify(completed));
-                    }
-                    showHome();
-                }
-            }, 1000);
-        } else {
-            soundWrong();
-            feedback.innerText = "Try again!";
-            feedback.className = "feedback wrong show";
-            // For Level Step 5, also clear formula on error for better UX
-            if (currentStep === 5) clearFormula();
-        }
-    }
-    renderHome();
+window.__wf = { COMPOUNDS: COMPOUNDS, EL: EL, STEPS: STEPS, diagnoseFormula: diagnoseFormula, state: function () { return G; } };
+})();
 </script>
 </body>
 </html>
