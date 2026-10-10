@@ -746,19 +746,33 @@ function bubble(x, y, r, id, alpha) {
   ctx.save(); if (alpha !== undefined) ctx.globalAlpha = alpha;
   ctx.beginPath(); ctx.arc(x, y, r - 1, 0, Math.PI * 2); ctx.fillStyle = ion.col; ctx.fill();
   ctx.lineWidth = Math.max(2, r * .12); ctx.strokeStyle = "#1F2A2E"; ctx.stroke();
-  // shading + pixel shine
-  ctx.beginPath(); ctx.arc(x, y, r - 1, .15 * Math.PI, .95 * Math.PI); ctx.lineWidth = r * .16; ctx.strokeStyle = "rgba(0,0,0,.14)"; ctx.stroke();
-  var px = Math.max(2, Math.round(r * .16)); ctx.fillStyle = "rgba(255,255,255,.9)";
-  ctx.fillRect(x - r * .55, y - r * .55, px * 2, px); ctx.fillRect(x - r * .55, y - r * .55 + px, px, px);
-  var dark = lum(ion.col) < .55;
-  ctx.fillStyle = dark ? "#FFFFFF" : "#1F2A2E";
-  ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  var fs = r * (ion.sym.length > 2 ? .62 : .78);
-  ctx.font = "800 " + fs + "px 'Open Sans', sans-serif";
-  ctx.fillText(ion.sym, x - r * .12, y + r * .06);
-  ctx.font = "800 " + r * .5 + "px 'Open Sans', sans-serif";
-  ctx.fillText(ion.sup, x + r * .5, y - r * .45);
+  // soft shadow along the bottom and a thin glossy highlight along the top-left rim (kept away from the label)
+  ctx.lineCap = "round";
+  ctx.beginPath(); ctx.arc(x, y, r * .8, .2 * Math.PI, .8 * Math.PI); ctx.lineWidth = r * .14; ctx.strokeStyle = "rgba(0,0,0,.12)"; ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, r * .8, 1.12 * Math.PI, 1.38 * Math.PI); ctx.lineWidth = r * .1; ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.stroke();
+  drawLabel(x, y, r, ion, lum(ion.col) < .55 ? "#FFFFFF" : "#1F2A2E");
   ctx.restore();
+}
+// Draws e.g. "SO" + subscript "4" + superscript "2−", centred as one group and sized to fit the bubble.
+function drawLabel(x, y, r, ion, colour) {
+  var parts = ion.id.match(/[A-Za-z]+|\d+/g), charge = (Math.abs(ion.ch) > 1 ? Math.abs(ion.ch) : "") + (ion.ch > 0 ? "+" : "−");
+  var fs = r * .82;
+  function widths(f) {
+    var w = 0;
+    parts.forEach(function (p) { ctx.font = "800 " + (/\d/.test(p) ? f * .72 : f) + "px 'Open Sans', sans-serif"; w += ctx.measureText(p).width; });
+    ctx.font = "800 " + f * .7 + "px 'Open Sans', sans-serif"; return { sym: w, ch: ctx.measureText(charge).width };
+  }
+  var m = widths(fs), maxW = r * 1.68;
+  if (m.sym + m.ch > maxW) { fs *= maxW / (m.sym + m.ch); m = widths(fs); }
+  var cx = x - (m.sym + m.ch) / 2, base = y + fs * .34;
+  ctx.fillStyle = colour; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  parts.forEach(function (p) {
+    var sub = /\d/.test(p), f = sub ? fs * .72 : fs;
+    ctx.font = "800 " + f + "px 'Open Sans', sans-serif";
+    ctx.fillText(p, cx, sub ? base + fs * .2 : base); cx += ctx.measureText(p).width;
+  });
+  ctx.font = "800 " + fs * .7 + "px 'Open Sans', sans-serif";
+  ctx.fillText(charge, cx + fs * .02, base - fs * .48);
 }
 function draw() {
   ctx.save();
